@@ -8,7 +8,7 @@ app.get('/',function(req,res){
 
 app.get('/about',function(req,res){
   res.sendFile(__dirname+'/view/about.html');
-  //It will find and locate index.html from View or Scripts
+  //It will find and locate about.html from View or Scripts
 });
 
 app.get('/token',function(req,res){
@@ -26,8 +26,8 @@ app.post('/post', function(req, res){
 	
 	r = require('rethinkdb')
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
-	if(err) throw err;
-		r.table('test').insert( req.body ).run(conn, function(err, DBres)
+		if(err) throw err;
+		r.table('test').insert( req.body ).run(conn, function(err, DBres)		//TODO: Make it so the table the data is sent to can be chosen.
 		{
 			if(err) throw err;
 			//console.log(DBres);
