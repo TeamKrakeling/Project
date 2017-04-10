@@ -1,0 +1,48 @@
+<html>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){
+				$('#button').click(function()
+				{
+					console.log("Klik");
+					token = generateToken();
+					$("#tokenDisplay").html("<p>Token: " + token + "</p>");
+					data = {}
+					data["date"] = getDate();
+					data["token"] = token;
+					data["active"] = true;
+					data
+					console.log(data);
+					$.post('/tokenReceiver', data, function(data){
+						console.log(data);
+					}, 'json');
+					
+					$('button').prop('disabled', true);
+					setTimeout(function(){$('button').prop('disabled', false)}, 5000);
+				});
+				
+				function generateToken(){
+					var date = new Date();
+					var milliseconds = date.getTime();
+					var token = milliseconds.toString(16);
+					console.log(token);
+					return token;
+				}
+				
+				function getDate(){
+					var date = new Date();
+					var month = date.getUTCMonth() + 1;
+					var day = date.getUTCDate();
+					var year = date.getUTCFullYear();
+					DMY = day + "/" + month + "/" + year;
+					return DMY;
+				}
+			});
+		</script>
+	</head>
+	<body>
+		<button id="button">test</button>
+		<div id="tokenDisplay"></div>
+	</body>
+</html>
