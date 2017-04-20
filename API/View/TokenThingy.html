@@ -4,28 +4,73 @@
 		<script src="tokens.js"></script> <!-- TODO: Does not work, how do? -->
 		<script>
 			$(document).ready(function(){
-				$('#button').click(function()
+				$('#requestButton').click(function()
 				{
-					console.log("Klik");
+					console.log("Klik request");
 					nodeName = $("#nodeNameInput").val();
 					if(nodeName.length > 0){
 						token = generateToken();
 						$("#token_display").html("<p>Token: " + token + "</p>");
-						data = {}
+						var data = {};
 						data["nodename"] = nodeName;
 						data["date"] = getDate();
 						data["token"] = token;
 						data["active"] = true;
-						data
 						console.log(data);
+						
 						$.post('/tokenReceiver', data, function(data){
 							console.log(data);
 						}, 'json');
 						
-						$('#button').prop('disabled', true);
-						setTimeout(function(){$('button').prop('disabled', false)}, 5000);
+						$('#requestButton').prop('disabled', true);
+						setTimeout(function(){$('#requestButton').prop('disabled', false)}, 5000);
 					} else {
 						$("#token_display").html("<p>Please put in a node name.</p>");
+					}
+				});
+				
+				$('#deleteButton').click(function()
+				{
+					console.log("Klik delete");
+					nodeToken = $("#nodeToDeleteInput").val();
+					if(nodeToken.length > 0){
+						var data = {};
+						data["token"] = nodeToken;
+						console.log(data);
+						
+						$.post('/tokenDeleter', data, function(data){
+							console.log(data);
+						}, 'json');
+						
+						$('#deleteButton').prop('disabled', true);
+						setTimeout(function(){$('#deleteButton').prop('disabled', false)}, 5000);
+					} else {
+						$("#delete_display").html("<p>Please put in a token to delete.</p>");
+					}
+				});
+				
+				$('#updateButton').click(function()
+				{
+					console.log("Klik update");
+					nodeToken = $("#nodeToUpdateInput").val();
+					if(nodeToken.length > 0){
+						var data = {};
+						var update = {};
+						var tokenToUpdate = {};
+						update["active"] = false;
+						tokenToUpdate["token"] = nodeToken;
+						data["update"] = update;
+						data["tokenToUpdate"] = tokenToUpdate;
+						console.log(data);
+						
+						$.post('/tokenUpdater', data, function(data){
+							console.log(data);
+						}, 'json');
+						
+						$('#updateButton').prop('disabled', true);
+						setTimeout(function(){$('#updateButton').prop('disabled', false)}, 5000);
+					} else {
+						$("#update_display").html("<p>Please put in a token to update.</p>");
 					}
 				});
 				
@@ -49,8 +94,19 @@
 		</script>
 	</head>
 	<body>
+		<h2>Request a token:</h2>
 		<input type="text" id="nodeNameInput" maxlength="200" placeholder="Node name" width="100">
-		<button id="button">Get token</button>
+		<button id="requestButton">Get token</button>
 		<div id="token_display"></div>
+		<br><br>
+		<h2>Delete a token:</h2>
+		<input type="text" id="nodeToDeleteInput" maxlength="200" placeholder="Node token" width="100">
+		<button id="deleteButton">Delete token</button>
+		<div id="delete_display"></div>
+		<br><br>
+		<h2>Update a token:</h2>
+		<input type="text" id="nodeToUpdateInput" maxlength="200" placeholder="Node token" width="100">
+		<button id="updateButton">Update token</button>
+		<div id="update_display"></div>
 	</body>
 </html>

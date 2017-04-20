@@ -2,7 +2,6 @@ $(document).ready(function(){
 	$('#button').click(function()
 	{
 		console.log("Klik");
-		//TODO: check if node has name
 		nodeName = $("#nodeNameInput").val();
 		console.log(nodeName);
 		if(nodeName.length > 0){
