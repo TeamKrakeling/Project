@@ -20,19 +20,19 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json()); 							//support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 
-//Receiver for all regular post calls to our server.
-//It expects a json with a 'table' field with the name of the table the content should go to and a content 'content' field with the content
+//Receiver for all regular post calls to our api
+//It expects a json with the following fields: 'table' (with the name of the table you want to insert data into) and 'content' (with the content you want to insert)
 app.post('/post', function(req, res){
-    console.log("*POST* inserted: "); 
+    console.log("*post*: inserted: "); 
 	console.log(req.body.content);
 	console.log("into table: " + req.body.table);
 	
-    res.writeHead(200, {'Content-Type': 'text/html'});			//TODO: Check input?
+    res.writeHead(200, {'Content-Type': 'text/html'});			//TODO: Check if table exists
     res.end('acknowledgement');
 	
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 		if(err) throw err;
-		r.table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)		//TODO: Make it so the table the data is sent to can be chosen.
+		r.table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
 		{
 			if(err) throw err;
 			//console.log(DBres);
@@ -40,7 +40,6 @@ app.post('/post', function(req, res){
 	});
 });
 
-//Receivers for specific functions
 app.get('/test_get',function(req, res){
 	//console.log("Start get test");
 	res.writeHead(200, {'Content-Type': 'text/html'});
@@ -63,13 +62,15 @@ app.get('/test_get',function(req, res){
 	});
 });
 
-app.post('/tokenDeleter', function (req, res) {		//TODO: Add a confirmation before deleting?
-	console.log("*TokenDeleter*: ");
+//Handles all delete calls to the api
+//It expects a json with the following fields: 'table' (with the name of the table you want to delete data from) and 'content' (with the id of the table entry you want to delete)
+app.post('/delete', function (req, res) {		//TODO: Add a confirmation before deleting?
+	console.log("*delete*: ");
     console.log(req.body);
 
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 		if(err) throw err;
-		r.table('tokens').filter(req.body).delete().run(conn, function(err, DBres)
+		r.table(req.body.table).filter(req.body.content).delete().run(conn, function(err, DBres)
 		{
 			if(err) throw err;
 			console.log(DBres);
@@ -77,15 +78,18 @@ app.post('/tokenDeleter', function (req, res) {		//TODO: Add a confirmation befo
 	});
 });
 
-app.post('/tokenUpdater', function (req, res) {
-	console.log("*TokenUpdater*: ");
+//Handles all update calls to the api
+//It expects a json with the following fields: 'table' (with the name of the table you want to delete data from) and 'content' (with the id of the table entry you want to delete)
+//It also expects the 'content' field to contain the following fields: 'fieldToUpdate' (with the name of the table field you want to update) and 'update' (with what you want to change the field to)
+app.post('/update', function (req, res) {
+	console.log("*update*: ");
     console.log(req.body);
-	console.log(req.body.tokenToUpdate);
-	console.log(req.body.update);
+	console.log(req.body.content.fieldToUpdate);
+	console.log(req.body.content.update);
 
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 		if(err) throw err;
-		r.table('tokens').filter(req.body.tokenToUpdate).update(req.body.update).run(conn, function(err, DBres)
+		r.table('tokens').filter(req.body.content.fieldToUpdate).update(req.body.content.update).run(conn, function(err, DBres)
 		{
 			if(err) throw err;
 			console.log(DBres);

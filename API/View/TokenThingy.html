@@ -41,10 +41,16 @@
 					nodeToken = $("#nodeToDeleteInput").val();
 					if(nodeToken.length > 0){
 						var data = {};
-						data["token"] = nodeToken;
+						data["table"] = "tokens";
+						
+						var content	= {};	
+						content["token"] = nodeToken;
+						
+						data["content"] = content;
+						
 						console.log(data);
 						
-						$.post('/tokenDeleter', data, function(data){
+						$.post('/delete', data, function(data){
 							console.log(data);
 						}, 'json');
 						
@@ -61,15 +67,20 @@
 					nodeToken = $("#nodeToUpdateInput").val();
 					if(nodeToken.length > 0){
 						var data = {};
+						data["table"] = "Tokens";
+						
+						var content = {};
 						var update = {};
-						var tokenToUpdate = {};
+						var fieldToUpdate = {};
 						update["active"] = false;
-						tokenToUpdate["token"] = nodeToken;
-						data["update"] = update;
-						data["tokenToUpdate"] = tokenToUpdate;
+						fieldToUpdate["token"] = nodeToken;
+						content["update"] = update;
+						content["fieldToUpdate"] = fieldToUpdate;
+						
+						data["content"] = content;
 						console.log(data);
 						
-						$.post('/tokenUpdater', data, function(data){
+						$.post('/update', data, function(data){
 							console.log(data);
 						}, 'json');
 						
