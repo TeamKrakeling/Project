@@ -63,7 +63,7 @@ app.post('/tokenReceiver', function (req, res) {
     console.log(req.body);
 	r = require('rethinkdb')
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
-	if(err) throw err;
+		if(err) throw err;
 		r.table('tokens').insert(req.body).run(conn, function(err, DBres)
 		{
 			if(err) throw err;
@@ -77,7 +77,7 @@ app.post('/tokenDeleter', function (req, res) {		//TODO: Add a confirmation befo
     console.log(req.body);
 	r = require('rethinkdb')
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
-	if(err) throw err;
+		if(err) throw err;
 		r.table("tokens").filter(req.body).delete().run(conn, function(err, DBres)
 		{
 			if(err) throw err;
@@ -93,7 +93,7 @@ app.post('/tokenUpdater', function (req, res) {
 	console.log(req.body.update);
 	r = require('rethinkdb')
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
-	if(err) throw err;
+		if(err) throw err;
 		r.table("tokens").filter(req.body.tokenToUpdate).update(req.body.update).run(conn, function(err, DBres)
 		{
 			if(err) throw err;
