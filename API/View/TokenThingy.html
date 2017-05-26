@@ -12,13 +12,19 @@
 						token = generateToken();
 						$("#token_display").html("<p>Token: " + token + "</p>");
 						var data = {};
-						data["nodename"] = nodeName;
-						data["date"] = getDate();
-						data["token"] = token;				//TODO: Change this to status with an int or string, or make an extra value with intermittent failures. Maybe also store regular interval?
-						data["active"] = true;
+						data["table"] = "tokens";
+						
+						var content	= {};					
+						content["nodename"] = nodeName;
+						content["date"] = getDate();
+						content["token"] = token;				//TODO: Change this to status with an int or string, or make an extra value with intermittent failures. Maybe also store regular interval?
+						content["active"] = true;
+						
+						data["content"] = content;
+						
 						console.log(data);
 						
-						$.post('/tokenReceiver', data, function(data){
+						$.post('/post', data, function(data){
 							console.log(data);
 						}, 'json');
 						

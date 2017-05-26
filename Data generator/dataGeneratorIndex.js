@@ -14,9 +14,12 @@ function requestSender()
 		method: "POST",
 		form:
 		{
-			id: milliseconds,
-			timestamp: DMY,
-			randomint: Math.floor(Math.random() * 65) -30
+			table: 'test',
+			content: {
+				id: milliseconds,
+				timestamp: DMY,
+				randomint: Math.floor(Math.random() * 65) -30
+			}
 		}
 	}, function(error, response, body)
 	{
