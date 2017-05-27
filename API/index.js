@@ -98,5 +98,29 @@ app.get('/test_get',function(req, res){
 	});
 });
 
+
+//Get list of all tables in database for testing purposes
+app.get('/tablelist',function(req, res){
+	res.writeHead(200, {'Content-Type': 'text/html'});
+    //res.end('acknowledgement');
+	
+	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+		if(err) throw err;
+		r.db('test').tableList().run(conn, function(err, cursor)
+		{
+			if (err) throw err;
+			cursor.toArray(function(err, result) {
+				if (err) throw err;
+				
+				var resultJson = JSON.stringify(result, null, 2);
+				console.log("*Tablelist*:");
+				console.log(resultJson);
+				res.end(resultJson);
+			});
+		});
+	});
+});
+
+
 app.listen(8181);
 console.log("Running at Port 8181");
