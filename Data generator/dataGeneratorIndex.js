@@ -36,14 +36,17 @@ function tokenGenerator()
 	var testToken = ms.toString(16);
 	
 	request({
-		uri: "http://145.24.222.95:8181/tokenReceiver",
+		uri: "http://145.24.222.95:8181/post",
 		method: "POST",
 		form:
 		{
-			active: true,
-			date: DMY,
-			token: testToken,
-			nodeName: "GeneratedToken"
+			table: 'test',
+			content: {
+				active: true,
+				date: DMY,
+				token: testToken,
+				nodeName: "GeneratedToken"
+			}
 		}
 	}, function(error, response, body)
 	{
