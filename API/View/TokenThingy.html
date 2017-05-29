@@ -13,8 +13,7 @@
 						token = generateToken();
 						$("#token_display").html("<p>Token: " + token + "</p>");
 						var data = {};
-						data["table"] = "tokens";
-						
+
 						var content	= {};					
 						content["nodename"] = nodeName;
 						content["date"] = getDate();
@@ -25,7 +24,7 @@
 						
 						console.log(data);
 						
-						$.post('/post', data, function(data){
+						$.post('/token_creator', data, function(data){
 							console.log(data);
 						}, 'json');
 						

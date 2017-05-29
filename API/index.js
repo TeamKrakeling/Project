@@ -1,6 +1,7 @@
 var express = require("express");
 var app     = express();
-var r 		= require('rethinkdb');
+var r 		= require("rethinkdb");
+var request = require("request");
 
 //This will find and locate index.html from View or Scripts
 app.get('/',function(req,res){
@@ -23,17 +24,49 @@ app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 //Handles all regular post calls to our api
 //It expects a json with the following fields: 'table' (with the name of the table you want to insert data into) and 'content' (with the content you want to insert)
 app.post('/post', function(req, res){
-    console.log("*post*: inserted: ");
-	console.log(req.body.content);							//TODO: Add the token check
-	console.log("into table: " + req.body.table);			//TODO: Check if table exists
-	
+	console.log("*post*: ");
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end('acknowledgement');
 	
 	//if(req.body.token === /*token for the table the user wants to edit, retrieved from the tokens table*/)		//<< token check start?
+	request({
+		uri: "http://145.24.222.95:8181/tablelist",
+		method: "GET"
+	}, function(error, response, body)
+	{
+		if(body.indexOf(req.body.table) > 0){			//TODO: Also add the token check
+			console.log("inserted: ");
+			console.log(req.body.content);
+			console.log("into table: " + req.body.table);
+		
+			
+			r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+				if(err) throw err;
+				r.table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
+				{
+					if(err) throw err;
+					//console.log(DBres);
+				});
+			});
+		} else {
+			console.log("The table '" + req.body.table + "' does not exist.");
+		}
+	});
+});
+
+//This is a pre-fabricated post for creating tokens
+app.post('/token_creator', function(req, res){
+	console.log("*token_creator*: ");
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end('acknowledgement');
+	
+	console.log("inserted: ");
+	console.log(req.body.content);
+	console.log("into table: " + req.body.table);
+
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 		if(err) throw err;
-		r.table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
+		r.table("tokens").insert(req.body.content).run(conn, function(err, DBres)
 		{
 			if(err) throw err;
 			//console.log(DBres);
@@ -79,8 +112,7 @@ app.post('/update', function (req, res) {
 //Get for testing purposes
 app.get('/test_get',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
-    //res.end('acknowledgement');
-	
+
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 		if(err) throw err;
 		r.table('test').run(conn, function(err, cursor)
@@ -102,7 +134,6 @@ app.get('/test_get',function(req, res){
 //Get list of all tables in database for testing purposes
 app.get('/tablelist',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
-    //res.end('acknowledgement');
 	
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 		if(err) throw err;
