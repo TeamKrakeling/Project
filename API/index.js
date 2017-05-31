@@ -1,7 +1,11 @@
-var express = require("express");
-var app     = express();
-var r 		= require("rethinkdb");
-var request = require("request");
+var express 	= require("express");
+var app     	= express();
+var r 			= require("rethinkdb");
+var request 	= require("request");
+var bodyParser 	= require('body-parser');
+
+app.use(bodyParser.json()); 							//support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 
 //This will find and locate index.html from View or Scripts
 app.get('/',function(req,res){
@@ -17,52 +21,68 @@ app.get('/token',function(req,res){
   res.sendFile(__dirname+'/view/TokenThingy.html');
 });
 
-var bodyParser = require('body-parser');
-app.use(bodyParser.json()); 							//support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
-
 //Handles all regular post calls to our api
-//It expects a json with the following fields: 'table' (with the name of the table you want to insert data into) and 'content' (with the content you want to insert)
+//It expects a json with the following fields: 'table' (with the name of the table you want to insert data into), 'token' (with the token of that table) and 'content' (with the content you want to insert)
 app.post('/post', function(req, res){
 	console.log("*post*: ");
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end('acknowledgement');
-	
+	res.end('acknowledgement');
+    
 	//if(req.body.token === /*token for the table the user wants to edit, retrieved from the tokens table*/)		//<< token check start?
 	request({
-		uri: "http://145.24.222.95:8181/tablelist",
+		uri: "http://145.24.222.95:8181/get_tablelist",
 		method: "GET"
 	}, function(error, response, body)
 	{
-		if(body.indexOf(req.body.table) > 0){			//TODO: Also add the token check
-			console.log("inserted: ");
-			console.log(req.body.content);
-			console.log("into table: " + req.body.table);
-		
-			
+		if(body.indexOf(req.body.table) > 0)
+		{
+			//Check the database for the token
 			r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 				if(err) throw err;
-				r.table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
+				r.table('tokens').filter({'nodename': req.body.table}).run(conn, function(err, cursor)
 				{
-					if(err) throw err;
-					//console.log(DBres);
+					if (err) throw err;
+					cursor.toArray(function(err, result) {
+						if (err) throw err;
+						
+						var resultJson = JSON.stringify(result, null, 2);
+						console.log("*Get token*:");
+						console.log(resultJson);
+						
+						console.log(result[0]["token"]);
+						console.log(req.body.token);
+						
+						if(result[0]["token"] === req.body.token){
+							console.log("Tokens match");
+							//r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+								if(err) throw err;
+								r.table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
+								{
+									if(err) throw err;
+									console.log("Posted token");
+								});
+							//});
+						} else {
+							console.log("Tokens don't match");
+						}
+					});
 				});
 			});
 		} else {
 			console.log("The table '" + req.body.table + "' does not exist.");
+			res.end("The table '" + req.body.table + "' does not exist.");
 		}
 	});
 });
 
 //This is a pre-fabricated post for creating tokens
-app.post('/token_creator', function(req, res){
-	console.log("*token_creator*: ");
+app.post('/post_token_creator', function(req, res){
+	console.log("*post token creator*: ");
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end('acknowledgement');
 	
-	console.log("inserted: ");
+	console.log("Created token: ");
 	console.log(req.body.content);
-	console.log("into table: " + req.body.table);
 
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 		if(err) throw err;
@@ -131,8 +151,8 @@ app.get('/test_get',function(req, res){
 });
 
 
-//Get list of all tables in database for testing purposes
-app.get('/tablelist',function(req, res){
+//Get list of all the tables in the database
+app.get('/get_tablelist',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
 	
 	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
@@ -144,8 +164,31 @@ app.get('/tablelist',function(req, res){
 				if (err) throw err;
 				
 				var resultJson = JSON.stringify(result, null, 2);
-				console.log("*Tablelist*:");
+				console.log("*Get tablelist*:");
 				console.log(resultJson);
+				res.end(resultJson);
+			});
+		});
+	});
+});
+
+//Get list of all tokens
+app.get('/get_tokens',function(req, res){
+	res.writeHead(200, {'Content-Type': 'text/html'});
+	
+	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+		if(err) throw err;
+		r.table('tokens').run(conn, function(err, cursor)
+		{
+			if (err) throw err;
+			cursor.toArray(function(err, result) {
+				if (err) throw err;
+				
+				var resultJson = JSON.stringify(result, null, 2);
+				console.log("*Get tokens*:");
+				console.log(resultJson);
+				console.log("One: ");
+				console.log(resultJson[1]);
 				res.end(resultJson);
 			});
 		});

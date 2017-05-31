@@ -14,6 +14,7 @@ function requestSender()
 		method: "POST",
 		form:
 		{
+			token: "15c538bd0bb",
 			table: 'test',
 			content: {
 				id: milliseconds,
@@ -40,7 +41,7 @@ function tokenGenerator()
 		method: "POST",
 		form:
 		{
-			table: 'test',
+			table: 'tokens',
 			content: {
 				active: true,
 				date: DMY,
