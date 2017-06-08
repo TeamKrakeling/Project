@@ -4,6 +4,9 @@ var r 			= require("rethinkdb");
 var request 	= require("request");
 var bodyParser 	= require('body-parser');
 
+var DBHost		= 'localhost';
+var DBPort		= 28015;
+
 app.use(bodyParser.json()); 							//support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 
@@ -12,13 +15,12 @@ app.get('/',function(req,res){
   res.sendFile(__dirname+'/View/index.html');
 });
 
-//This will find and locate about.html from View or Scripts
-app.get('/about',function(req,res){
-  res.sendFile(__dirname+'/view/about.html');
+app.get('/token',function(req,res){
+  res.sendFile(__dirname+'/view/tokenpage.html');
 });
 
-app.get('/token',function(req,res){
-  res.sendFile(__dirname+'/view/TokenThingy.html');
+app.get('/unit_test',function(req,res){
+  res.sendFile(__dirname+'/view/UnitTest.html');
 });
 
 //Handles all regular post calls to our api
@@ -28,7 +30,7 @@ app.post('/post', function(req, res){
     res.writeHead(200, {'Content-Type': 'text/html'});
 	res.end('acknowledgement');
     
-	//if(req.body.token === /*token for the table the user wants to edit, retrieved from the tokens table*/)		//<< token check start?
+	//Check if the table exists
 	request({
 		uri: "http://145.24.222.95:8181/get_tablelist",
 		method: "GET"
@@ -36,32 +38,26 @@ app.post('/post', function(req, res){
 	{
 		if(body.indexOf(req.body.table) > 0)
 		{
-			//Check the database for the token
-			r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+			//Check if the token the user supplemented and the token in the database match
+			r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 				if(err) throw err;
-				r.table('tokens').filter({'nodename': req.body.table}).run(conn, function(err, cursor)
-				{
+				r.table('tokens').filter({'nodename': req.body.table}).run(conn, function(err, cursor){
 					if (err) throw err;
-					cursor.toArray(function(err, result) {
+					cursor.toArray(function(err, result){
 						if (err) throw err;
 						
 						var resultJson = JSON.stringify(result, null, 2);
 						console.log("*Get token*:");
 						console.log(resultJson);
 						
-						console.log(result[0]["token"]);
-						console.log(req.body.token);
-						
 						if(result[0]["token"] === req.body.token){
 							console.log("Tokens match");
-							//r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
 								if(err) throw err;
 								r.table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
 								{
 									if(err) throw err;
-									console.log("Posted token");
+									console.log("Posted data");
 								});
-							//});
 						} else {
 							console.log("Tokens don't match");
 						}
@@ -84,10 +80,9 @@ app.post('/post_token_creator', function(req, res){
 	console.log("Created token: ");
 	console.log(req.body.content);
 
-	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.table("tokens").insert(req.body.content).run(conn, function(err, DBres)
-		{
+		r.table("tokens").insert(req.body.content).run(conn, function(err, DBres){
 			if(err) throw err;
 			//console.log(DBres);
 		});
@@ -96,14 +91,13 @@ app.post('/post_token_creator', function(req, res){
 
 //Handles all delete calls to the api
 //It expects a json with the following fields: 'table' (with the name of the table you want to delete data from) and 'content' (with the id of the table entry you want to delete)
-app.post('/delete', function (req, res) {		//TODO: Add a confirmation before deleting?
+app.post('/delete', function (req, res){		//TODO: Add a confirmation before deleting?
 	console.log("*delete*: ");
     console.log(req.body);
 
-	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.table(req.body.table).filter(req.body.content).delete().run(conn, function(err, DBres)
-		{
+		r.table(req.body.table).filter(req.body.content).delete().run(conn, function(err, DBres){
 			if(err) throw err;
 			console.log(DBres);
 		});
@@ -119,10 +113,9 @@ app.post('/update', function (req, res) {
 	console.log(req.body.content.fieldToUpdate);
 	console.log(req.body.content.update);
 
-	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.table('tokens').filter(req.body.content.fieldToUpdate).update(req.body.content.update).run(conn, function(err, DBres)
-		{
+		r.table('tokens').filter(req.body.content.fieldToUpdate).update(req.body.content.update).run(conn, function(err, DBres){
 			if(err) throw err;
 			console.log(DBres);
 		});
@@ -131,9 +124,10 @@ app.post('/update', function (req, res) {
 
 //Get for testing purposes
 app.get('/test_get',function(req, res){
+	
 	res.writeHead(200, {'Content-Type': 'text/html'});
-
-	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+	
+	r.connect({ host: DBHost, port: DBPort }, function(err, conn) {
 		if(err) throw err;
 		r.table('test').run(conn, function(err, cursor)
 		{
@@ -155,10 +149,9 @@ app.get('/test_get',function(req, res){
 app.get('/get_tablelist',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
 	
-	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.db('test').tableList().run(conn, function(err, cursor)
-		{
+		r.db('test').tableList().run(conn, function(err, cursor){
 			if (err) throw err;
 			cursor.toArray(function(err, result) {
 				if (err) throw err;
@@ -176,10 +169,9 @@ app.get('/get_tablelist',function(req, res){
 app.get('/get_tokens',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
 	
-	r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.table('tokens').run(conn, function(err, cursor)
-		{
+		r.table('tokens').run(conn, function(err, cursor){
 			if (err) throw err;
 			cursor.toArray(function(err, result) {
 				if (err) throw err;
@@ -195,6 +187,35 @@ app.get('/get_tokens',function(req, res){
 	});
 });
 
+
+//gets weatherdata from database (based on what date you passed in YYYYMMDD: '2016'' for all data in 2016, '201601' for January 2016, '20160101' for the first of January 2016)
+//pass time variable with /get_weather?time=*VARIABELE*
+app.get('/get_weather',function(req, res){
+	var time = req.query.time;
+	if(time){	
+		res.writeHead(200, {'Content-Type': 'text/html'});
+	
+		r.connect({ host: DBHost, port: DBPort }, function(err, conn){
+			if(err) throw err;
+			r.table('weer').filter(function(doc){return doc('Datum').match(time)}).run(conn, function(err, cursor){
+			if (err) throw err;
+				cursor.toArray(function(err, result) {
+					if (err) throw err;
+				
+					var resultJson = JSON.stringify(result, null, 2);
+					console.log("*Get weatherdata*:");
+					console.log(resultJson);
+					res.end(resultJson);
+				});
+			});
+		});
+	}
+	else
+	{
+		console.log("add a YYYYMMDD timestamp")
+		res.end("null")
+	}
+});
 
 app.listen(8181);
 console.log("Running at Port 8181");
