@@ -11,6 +11,7 @@ var plant_soil_humidity = [["plant_soil_humidity_1","15c87a6c8e6"],["plant_soil_
 var plant_soil_ph = [["plant_soil_ph_1","15c87a70f88"],["plant_soil_ph_2","15c87a72660"],["plant_soil_ph_3","15c87a73cf7"]];
 var plant_light = [["plant_light","15c87a6b1fc"]];
 
+/*
 function requestSender()
 {
 	var DMY = getCurrentDate("DMY");
@@ -35,6 +36,8 @@ function requestSender()
 		console.log("received: " + body);
 	});
 }
+*/
+
 
 function requestSenderTemps(temp_node)
 {
@@ -54,7 +57,7 @@ function requestSenderTemps(temp_node)
 			content: {
 				date: date,
 				time: time,
-				temperature: Math.floor(Math.random() * 65) -30
+				temperature: Math.floor(Math.random() * 5) + 15
 			}
 		}
 	}, function(error, response, body)
@@ -90,9 +93,12 @@ function requestSenderTemps(temp_node)
 	});
 }*/
 
+
+
 //--General functions
 //This function returns the current date, in the format specified in the arguments
-//Possible returnTypes: "DMY" (day month year), "Milliseconds", and with no argument the function returns the full date
+//Possible returnTypes: "DMY" (day month year), "Milliseconds", YYYYMMDD (year month day), and with no argument the function returns the full date
+
 function getCurrentDate(returnType)
 {
 	var date = new Date();
@@ -112,17 +118,36 @@ function getCurrentDate(returnType)
 	} 
 	if(returnType === "yyyymmdd") 
 	{
-		var month = date.getUTCMonth() + 1;
+		var month = date.getUTCMonth() + 1 - 5;
 		var day = date.getUTCDate();
 		var year = date.getUTCFullYear();
-		var DMY = year + "/" + month + "/" + day;
-		return DMY;
+		
+		var yyyymmdd = year + "";
+		
+		if(month < 10)
+		{yyyymmdd+= "0";}
+	
+		yyyymmdd+= month + "";
+		
+		if(day < 10)
+		{yyyymmdd+= "0";}
+		yyyymmdd+= day;
+		
+		return yyyymmdd;
 	} 
 	if(returnType === "Time") 
 	{
 		var hours = date.getUTCHours();
 		var minutes = date.getUTCMinutes();
-		var time = hours + ":" + minutes;
+		
+		if(minutes < 10)
+		{
+			var time = hours + ":" + "0" + minutes;
+		}
+		else
+		{
+			var time = hours + ":" + minutes;
+		}
 		return time;
 	}
 	else 
@@ -131,7 +156,6 @@ function getCurrentDate(returnType)
 	}
 }
 
-//setInterval(function(){requestSender()}, 3000);
 setInterval(function()
 {
 	temperature_tokens.forEach(function(element){

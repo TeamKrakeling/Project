@@ -48,7 +48,7 @@ app.post('/post', function(req, res){
 						
 						var resultJson = JSON.stringify(result, null, 2);
 						console.log("*Get token*:");
-						console.log(resultJson);
+						//console.log(resultJson);
 						
 						if(result[0]["token"] === req.body.token){
 							console.log("Tokens match");
@@ -99,7 +99,7 @@ app.post('/delete', function (req, res){		//TODO: Add a confirmation before dele
 		if(err) throw err;
 		r.table(req.body.table).filter(req.body.content).delete().run(conn, function(err, DBres){
 			if(err) throw err;
-			console.log(DBres);
+			//console.log(DBres);
 		});
 	});
 });
@@ -122,6 +122,7 @@ app.post('/update', function (req, res) {
 	});
 });
 
+/*
 //Get for testing purposes
 app.get('/test_get',function(req, res){
 	
@@ -143,6 +144,7 @@ app.get('/test_get',function(req, res){
 		});
 	});
 });
+*/
 
 
 //Get list of all the tables in the database
@@ -158,7 +160,7 @@ app.get('/get_tablelist',function(req, res){
 				
 				var resultJson = JSON.stringify(result, null, 2);
 				console.log("*Get tablelist*:");
-				console.log(resultJson);
+				//console.log(resultJson);
 				res.end(resultJson);
 			});
 		});
@@ -178,9 +180,7 @@ app.get('/get_tokens',function(req, res){
 				
 				var resultJson = JSON.stringify(result, null, 2);
 				console.log("*Get tokens*:");
-				console.log(resultJson);
-				console.log("One: ");
-				console.log(resultJson[1]);
+				//console.log(resultJson);
 				res.end(resultJson);
 			});
 		});
@@ -188,23 +188,24 @@ app.get('/get_tokens',function(req, res){
 });
 
 
-//gets weatherdata from database (based on what date you passed in YYYYMMDD: '2016'' for all data in 2016, '201601' for January 2016, '20160101' for the first of January 2016)
-//pass time variable with /get_weather?time=*VARIABELE*
-app.get('/get_weather',function(req, res){
-	var time = req.query.time;
-	if(time){	
+//gets data from the table (based on what date you passed in YYYYMMDD format, '2016'' for all data in 2016, '201601' for January 2016, '20160101' for the first of January 2016)
+//pass table and time_period variables with /get_data?table=*VARIABELE*&time_period=*VARIABELE*
+app.get('/get_data',function(req, res){
+	var table = req.query.table;
+	var time_period = req.query.time_period;
+	if(table && time_period){	
 		res.writeHead(200, {'Content-Type': 'text/html'});
 	
 		r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 			if(err) throw err;
-			r.table('weer').filter(function(doc){return doc('Datum').match(time)}).run(conn, function(err, cursor){
+			r.table(table).filter(function(doc){return doc('date').match(time_period)}).run(conn, function(err, cursor){
 			if (err) throw err;
 				cursor.toArray(function(err, result) {
 					if (err) throw err;
 				
 					var resultJson = JSON.stringify(result, null, 2);
-					console.log("*Get weatherdata*:");
-					console.log(resultJson);
+					console.log("*Get data from database*:");
+					//console.log(resultJson);
 					res.end(resultJson);
 				});
 			});
@@ -212,8 +213,7 @@ app.get('/get_weather',function(req, res){
 	}
 	else
 	{
-		console.log("add a YYYYMMDD timestamp")
-		res.end("null")
+		res.end("error pass variables")
 	}
 });
 
