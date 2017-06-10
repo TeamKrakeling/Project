@@ -67,7 +67,6 @@
 					nodeToken = $("#nodeToUpdateInput").val();
 					if(nodeToken.length > 0){
 						var data = {};
-						data["table"] = "Tokens";
 						
 						var content = {};
 						var update = {};
@@ -80,7 +79,7 @@
 						data["content"] = content;
 						console.log(data);
 						
-						$.post('/update', data, function(data){
+						$.post('/update_node', data, function(data){
 							console.log(data);
 						}, 'json');
 						

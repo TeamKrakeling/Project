@@ -1,3 +1,11 @@
+// *-----------------------------------------------------------------------*
+// | Authors: Corné & Rianne (Team Krakeling)                              |
+// | Summary: The index file for the dummy data generator for our project. |
+// | It generates test data for our databse.                               |
+// | It will no longer be nescessary when we the real data generators are  |
+// | provided to us by school.                                             |
+// *-----------------------------------------------------------------------*
+
 var express = require("express");
 var app     = express();
 var request = require("request");
@@ -12,33 +20,6 @@ var plant_soil_ph = [["plant_soil_ph_1","15c87a70f88"],["plant_soil_ph_2","15c87
 var plant_light = [["plant_light","15c87a6b1fc"]];
 
 //--Data generation functions
-/*
-function requestSender()
-{
-	var DMY = getCurrentDate("DMY");
-	var milliseconds = getCurrentDate("Milliseconds");
-	
-	request(
-	{
-		uri: "http://145.24.222.95:8181/post",
-		method: "POST",
-		form:
-		{
-			token: "15c538bd0bb",
-			table: 'test',
-			content: {
-				id: milliseconds,
-				timestamp: DMY,
-				randomint: Math.floor(Math.random() * 65) -30
-			}
-		}
-	}, function(error, response, body)
-	{
-		console.log("received: " + body);
-	});
-}
-*/
-
 function requestSenderTemps(temp_node)
 {
 	var table_name = temp_node[0];
@@ -68,44 +49,33 @@ function requestSenderTemps(temp_node)
 
 //--General functions
 //This function returns the current date, in the format specified in the arguments
-//Possible returnTypes: "DMY" (day month year), "yyyymmdd" (year month day), "Milliseconds" and "Time" (in hours and minutes). With no arguments the function returns the full date.
+//Possible returnTypes: "yyyymmdd" (year month day), "Time" (in hours and minutes). With no arguments the function returns the full date.
 function getCurrentDate(returnType)
 {
 	var date = new Date();
 
-	if(returnType === "DMY") 
-	{
-		var month = date.getUTCMonth() + 1;
-		var day = date.getUTCDate();
-		var year = date.getUTCFullYear();
-		var DMY = day + "/" + month + "/" + year;
-		return DMY;
-	} 
-	else if (returnType === "Milliseconds")
-	{
-		var milliseconds = date.getTime();
-		return milliseconds;
-	} 
 	if(returnType === "yyyymmdd") 
 	{
 		var month = date.getUTCMonth() + 1 - 5;
 		var day = date.getUTCDate();
 		var year = date.getUTCFullYear();
-		
 		var yyyymmdd = year + "";
 		
 		if(month < 10)
-		{yyyymmdd+= "0";}
-	
+		{
+			yyyymmdd+= "0";
+		}
 		yyyymmdd+= month + "";
 		
 		if(day < 10)
-		{yyyymmdd+= "0";}
+		{
+			yyyymmdd+= "0";
+		}
 		yyyymmdd+= day;
 		
 		return yyyymmdd;
 	} 
-	if(returnType === "Time") 
+	else if(returnType === "Time") 
 	{
 		var hours = date.getUTCHours();
 		var minutes = date.getUTCMinutes();
