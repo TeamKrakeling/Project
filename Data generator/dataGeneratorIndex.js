@@ -11,6 +11,7 @@ var plant_soil_humidity = [["plant_soil_humidity_1","15c87a6c8e6"],["plant_soil_
 var plant_soil_ph = [["plant_soil_ph_1","15c87a70f88"],["plant_soil_ph_2","15c87a72660"],["plant_soil_ph_3","15c87a73cf7"]];
 var plant_light = [["plant_light","15c87a6b1fc"]];
 
+//--Data generation functions
 /*
 function requestSender()
 {
@@ -37,7 +38,6 @@ function requestSender()
 	});
 }
 */
-
 
 function requestSenderTemps(temp_node)
 {
@@ -66,39 +66,9 @@ function requestSenderTemps(temp_node)
 	});
 }
 
-//--Data generation functions
-/*function tokenGenerator()
-{
-	var DMY = getCurrentDate("DMY");
-	var ms = getCurrentDate("Milliseconds");
-	
-	var testToken = ms.toString(16);
-	
-	request({
-		uri: "http://145.24.222.95:8181/post",
-		method: "POST",
-		form:
-		{
-			table: 'tokens',
-			content: {
-				active: true,
-				date: DMY,
-				token: testToken,
-				nodeName: "GeneratedToken"
-			}
-		}
-	}, function(error, response, body)
-	{
-		console.log("received: " + body);
-	});
-}*/
-
-
-
 //--General functions
 //This function returns the current date, in the format specified in the arguments
-//Possible returnTypes: "DMY" (day month year), "Milliseconds", YYYYMMDD (year month day), and with no argument the function returns the full date
-
+//Possible returnTypes: "DMY" (day month year), "yyyymmdd" (year month day), "Milliseconds" and "Time" (in hours and minutes). With no arguments the function returns the full date.
 function getCurrentDate(returnType)
 {
 	var date = new Date();

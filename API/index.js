@@ -10,7 +10,7 @@ var DBPort		= 28015;
 app.use(bodyParser.json()); 							//support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 
-//This will find and locate index.html from View or Scripts
+//Links various urls to their respective html pages
 app.get('/',function(req,res){
   res.sendFile(__dirname+'/View/index.html');
 });
@@ -48,7 +48,6 @@ app.post('/post', function(req, res){
 						
 						var resultJson = JSON.stringify(result, null, 2);
 						console.log("*Get token*:");
-						//console.log(resultJson);
 						
 						if(result[0]["token"] === req.body.token){
 							console.log("Tokens match");
@@ -71,7 +70,8 @@ app.post('/post', function(req, res){
 	});
 });
 
-//This is a pre-fabricated post for creating tokens
+//This is a pre-fabricated post for creating nodes/tokens
+//It expects a json with a 'content' (with all the information fields for a token :'date', 'nodedame', 'token' and 'active')
 app.post('/post_token_creator', function(req, res){
 	console.log("*post token creator*: ");
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -122,32 +122,7 @@ app.post('/update', function (req, res) {
 	});
 });
 
-/*
-//Get for testing purposes
-app.get('/test_get',function(req, res){
-	
-	res.writeHead(200, {'Content-Type': 'text/html'});
-	
-	r.connect({ host: DBHost, port: DBPort }, function(err, conn) {
-		if(err) throw err;
-		r.table('test').run(conn, function(err, cursor)
-		{
-			if (err) throw err;
-			cursor.toArray(function(err, result) {
-				if (err) throw err;
-				
-				var resultJson = JSON.stringify(result, null, 2);
-				console.log("*Test get*:");
-				console.log(resultJson);
-				res.end(resultJson);
-			});
-		});
-	});
-});
-*/
-
-
-//Get list of all the tables in the database
+//Get a list of all the tables in the database
 app.get('/get_tablelist',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
 	
@@ -167,7 +142,7 @@ app.get('/get_tablelist',function(req, res){
 	});
 });
 
-//Get list of all tokens
+//Get a list of all tokens
 app.get('/get_tokens',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
 	
@@ -187,9 +162,8 @@ app.get('/get_tokens',function(req, res){
 	});
 });
 
-
-//gets data from the table (based on what date you passed in YYYYMMDD format, '2016'' for all data in 2016, '201601' for January 2016, '20160101' for the first of January 2016)
-//pass table and time_period variables with /get_data?table=*VARIABELE*&time_period=*VARIABELE*
+//Get data from a table (based on what date you passed in YYYYMMDD format, '2016'' for all data in 2016, '201601' for January 2016, '20160101' for the first of January 2016)
+//Pass table and time_period variables with /get_data?table=*VARIABELE*&time_period=*VARIABELE*
 app.get('/get_data',function(req, res){
 	var table = req.query.table;
 	var time_period = req.query.time_period;
