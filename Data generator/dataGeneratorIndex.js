@@ -20,7 +20,7 @@ var plant_soil_ph = [["plant_soil_ph_1","15c87a70f88"],["plant_soil_ph_2","15c87
 var plant_light = [["plant_light","15c87a6b1fc"]];
 
 //--Data generation functions
-function requestSenderTemps(temp_node)
+function requestSenderTemperatures(temp_node)
 {
 	var table_name = temp_node[0];
 	var table_token = temp_node[1];
@@ -38,7 +38,88 @@ function requestSenderTemps(temp_node)
 			content: {
 				date: date,
 				time: time,
-				temperature: Math.floor(Math.random() * 5) + 15
+				temperature: Math.floor(Math.random() * 5) + 18
+			}
+		}
+	}, function(error, response, body)
+	{
+		console.log("received: " + body);
+	});
+}
+
+function requestSenderHumidity(humid_node)
+{
+	var table_name = humid_node[0];
+	var table_token = humid_node[1];
+	var date = getCurrentDate("yyyymmdd");
+	var time = getCurrentDate("Time");
+	
+	request(
+	{
+		uri: "http://145.24.222.95:8181/post",
+		method: "POST",
+		form:
+		{
+			token: table_token,
+			table: table_name,
+			content: {
+				date: date,
+				time: time,
+				humidity: Math.floor(Math.random() * 20) + 30
+			}
+		}
+	}, function(error, response, body)
+	{
+		console.log("received: " + body);
+	});
+}
+
+function requestSenderPH(humid_node)
+{
+	var table_name = humid_node[0];
+	var table_token = humid_node[1];
+	var date = getCurrentDate("yyyymmdd");
+	var time = getCurrentDate("Time");
+	
+	request(
+	{
+		uri: "http://145.24.222.95:8181/post",
+		method: "POST",
+		form:
+		{
+			token: table_token,
+			table: table_name,
+			content: {
+				date: date,
+				time: time,
+				pH: ((Math.random() * 3) + 5).toFixed(2)
+			}
+		}
+	}, function(error, response, body)
+	{
+		console.log("received: " + body);
+	});
+}
+
+function requestSenderLight(humid_node)
+{
+	var table_name = humid_node[0];
+	var table_token = humid_node[1];
+	var date = getCurrentDate("yyyymmdd");
+	var time = getCurrentDate("Time");
+	
+	request(
+	{
+		uri: "http://145.24.222.95:8181/post",
+		method: "POST",
+		form:
+		{
+			token: table_token,
+			table: table_name,
+			content: {
+				date: date,
+				time: time,
+				light: Math.floor(Math.random() * 600) + 50
 			}
 		}
 	}, function(error, response, body)
@@ -99,6 +180,28 @@ function getCurrentDate(returnType)
 setInterval(function()
 {
 	temperature_tokens.forEach(function(element){
-		requestSenderTemps(element);
+		requestSenderTemperatures(element);
 	});
+	humidity_tokens.forEach(function(element){
+		requestSenderHumidity(element);
+	});
+	wall_temperature.forEach(function(element){
+		requestSenderTemperatures(element);
+	});
+	wall_humidity.forEach(function(element){
+		requestSenderHumidity(element);
+	});
+	plant_soil_temperature.forEach(function(element){
+		requestSenderTemperatures(element);
+	});
+	plant_soil_humidity.forEach(function(element){
+		requestSenderHumidity(element);
+	});
+	plant_soil_ph.forEach(function(element){
+		requestSenderPH(element);
+	});
+	plant_light.forEach(function(element){
+		requestSenderLight(element);
+	});
+	
 }, 1800000);	//1800000 goes every half hour
