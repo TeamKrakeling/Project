@@ -1,0 +1,134 @@
+<html>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<style>
+#container
+{
+	min-width: 400px;
+	max-width: 800px;
+}
+</style>
+
+<div id="container"></div>
+
+<script>
+var gv_dataset = [],
+    gv_series_counter = 0,
+	gv_table_names = ['weather', "temperature_node_1"];
+
+function createChart()
+{
+
+    Highcharts.stockChart('container',
+	{
+		
+		//add °C next to the y-axis values.
+		yAxis:
+		{
+			labels:
+			{
+				formatter: function ()
+				{
+					return this.value + '°C';
+				}
+			},
+		},
+	
+		//'series' is the variable where to assign the datapointarray to.
+        series: gv_dataset
+    });
+}
+
+$.each(gv_table_names, function (i, pm_table_name)
+{
+	
+	//data array that's to be loaded in the graph containing arrays per datapoint with time in milliseconds since epoch (1970) and temperaturevalue.
+	var lv_data_array = [];	
+	
+	$.get('http://145.24.222.95:8181/get_data?table=' + pm_table_name + '&time_period=2017', function (json) {
+		
+		$.each(json, function (i, jsonobject)
+		{			
+						
+			//parses date to milliseconds since epoch
+			var lv_milliseconds_date = parsedate(jsonobject.date);
+			
+			var lv_temperature;
+			var lv_milliseconds_time;
+			//if statement because the data from the weather station returns time as hours without minutes, and weatherstation measures temperature in 0.1°C instead of 1°C.
+			if (pm_table_name == "weather")
+			{
+				lv_temperature = parseInt(jsonobject.temperature)/10;
+				
+				//parses hours to miliseconds
+				lv_milliseconds_time = ((jsonobject.time) * 60) * 60000;
+			}
+			else
+			{
+				lv_temperature = parseInt(jsonobject.temperature);
+				
+				//splits hours and minutes.
+				var lv_time_array = jsonobject.time.toString().split(':');
+				//parses time to milliseconds since epoch
+				lv_milliseconds_time = parsetime(lv_time_array);
+			}
+			 
+			//adds the milliseconds of since epoch of the date with the milliseconds of the hours and minutes.
+			var lv_milliseconds_since_epoch = lv_milliseconds_date + lv_milliseconds_time;
+			
+			
+			//array containing milliseconds since epoch and temperaturevalue.
+			var lv_data_object = [lv_milliseconds_since_epoch, lv_temperature];
+			
+			//adds local variable data_object to local variable data_array.
+			lv_data_array.push(lv_data_object);
+		});
+		
+		
+		//sorts the data in right order based on the first value (which is milliseconds since epoch in this case)
+		lv_data_array.sort();
+		
+		
+		var lv_data_name;
+		if (pm_table_name == "weather")
+		{
+			lv_data_name = "buiten temperatuur"
+		}
+		else if (pm_table_name == "temperature_node_1")
+		{
+			lv_data_name = "binnen temperatuur";
+		}
+        gv_dataset[i] =
+		{
+			name: lv_data_name,
+            data: lv_data_array
+        };
+
+        gv_series_counter += 1;
+        if (gv_series_counter === gv_table_names.length)
+		{
+            createChart();
+        }
+    });
+});
+
+
+//parses YYYYMMDD date string to 'JavaScript date object' and returns milliseconds since epoch (1970) of that object.
+function parsedate(pm_date_string)
+{
+	if(!/^(\d){8}$/.test(pm_date_string)) return "invalid date";
+	var y = pm_date_string.substr(0,4),
+		m = pm_date_string.substr(4,2) - 1,
+		d = pm_date_string.substr(6,2);
+		return new Date(y,m,d).getTime();
+}
+
+function parsetime(pm_time_array)
+{	
+	//multiplies hours with 60 to make them into minutes, adds the minutes already in the timeobject and multiplies them times 60.000 to convert them from minutes to milliseconds.
+	var lv_time_milliseconds = ((pm_time_array[0] * 60) + parseInt(pm_time_array[1])) * 60000;
+	
+	return lv_time_milliseconds;
+}
+</script>
+</html>

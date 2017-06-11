@@ -31,6 +31,11 @@ app.get('/unit_test',function(req,res){
   res.sendFile(__dirname+'/view/UnitTest.html');
 });
 
+app.get('/visualisation_0896024',function(req,res){
+  res.sendFile(__dirname+'/view/visualisation/0896024/visualisation_0896024.html');
+});
+
+
 //Handles all regular post calls to our api
 //It expects a json with the following fields: 'table' (with the name of the table you want to insert data into), 'token' (with the token of that table) and 'content' (with the content you want to insert)
 app.post('/post', function(req, res){
@@ -195,7 +200,6 @@ app.get('/get_data',function(req, res){
 	var table = req.query.table;
 	var time_period = req.query.time_period;
 	if(table && time_period){	
-		res.writeHead(200, {'Content-Type': 'text/html'});
 	
 		r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 			if(err) throw err;
@@ -207,7 +211,7 @@ app.get('/get_data',function(req, res){
 					var resultJson = JSON.stringify(result, null, 2);
 					console.log("*Get data from database*:");
 					//console.log(resultJson);
-					res.end(resultJson);
+					res.json(result);
 				});
 			});
 		});
