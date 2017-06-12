@@ -31,19 +31,19 @@ app.get('/unit_test',function(req,res){
   res.sendFile(__dirname+'/view/UnitTest.html');
 });
 
-
-
-//routes to indidual part of 0896024 Corné Verhoog.
+//Routes to indidual part of 0896024 Corné Verhoog.
 app.get('/0896024',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896024/0896024.html');});
 app.get('/visualisation_0896024',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896024/visualisation_0896024.html');});
 app.get('/node_manager_0896024',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896024/node_manager_0896024.html');});
-//routes to indidual part of 0896024 Corné Verhoog.
 
-
-
+//Routes to indidual part of Rianne Schattenberg (0896535)
+app.get('/0896535',function(req,res)
+{res.sendFile(__dirname+'/view/individual_parts/0896535/0896535.html');});
+app.get('/0896535_nodes',function(req,res)
+{res.sendFile(__dirname+'/view/individual_parts/0896535/0896535_nodes.html');});
 
 //Handles all regular post calls to our api
 //It expects a json with the following fields: 'table' (with the name of the table you want to insert data into), 'token' (with the token of that table) and 'content' (with the content you want to insert)
