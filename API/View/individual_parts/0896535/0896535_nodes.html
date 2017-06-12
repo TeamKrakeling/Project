@@ -9,8 +9,8 @@
 				padding: 1%;
 			}
 			.menu{
-				height:6%;
 				border-bottom:3px solid black;
+				height:6%;
 			}
 
 			.menu ul a li{
@@ -26,8 +26,9 @@
 				margin-left:2%;
 			}
 
-			.current {
-				color: #57966e;
+			th {
+				background-color:#91f8b7;
+				font-size: 1.2em;
 			}
 
 			p {
@@ -35,10 +36,136 @@
 				color:black;
 			}
 			
+			h2 {
+				font-family: 'Calibri', 'Arial', sans-serif;
+				color:black;
+			}
+			
 			a {
 				text-decoration: none;
 			}
+			
+			table, th, td {
+				font-family: 'Calibri', 'Arial', sans-serif;
+				border-collapse: collapse;
+				border: 1px solid black
+			}
+			
+			td{
+				padding-left: 4px;
+				padding-right: 8px;
+			}
 		</style>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script>
+			$(document).ready(function(){				//TODO: This JQuery part could be removed later if not needed anymore
+				$('#requestButton').click(function()
+				{
+					console.log("Klik request");
+					nodeName = $("#nodeNameInput").val();
+					if(nodeName.length > 0){
+						token = generateToken();
+						$("#token_display").html("<p>Token: " + token + "</p>");
+						var data = {};
+
+						var content	= {};					
+						content["nodename"] = nodeName;
+						content["date"] = getDate();
+						content["token"] = token;		
+						content["active"] = true;
+						
+						data["content"] = content;
+						
+						console.log(data);
+						
+						$.post('/post_token_creator', data, function(data){
+							console.log(data);
+						}, 'json');
+						
+						$('#requestButton').prop('disabled', true);
+						setTimeout(function(){$('#requestButton').prop('disabled', false)}, 5000);
+					} else {
+						$("#token_display").html("<p>Please put in a node name.</p>");
+					}
+				});
+				
+				$('#toggleButton').click(function()
+				{
+					console.log("Klik update");
+					nodeToken = $("#nodeToToggleInput").val();
+					if(nodeToken.length > 0){
+						var data = {};
+						
+						var content = {};
+						var fieldToUpdate = {};
+						fieldToUpdate["token"] = nodeToken;
+						content["fieldToUpdate"] = fieldToUpdate;
+						
+						data["content"] = content;
+						console.log(data);
+						
+						$.post('/toggle_node', data, function(data){
+							//console.log(data);
+						}, 'json');
+						
+						$('#toggleButton').prop('disabled', true);
+						setTimeout(function(){$('#toggleButton').prop('disabled', false)}, 5000);
+						location.reload();
+					} else {
+						$("#toggle_display").html("<p>Please put in a token to update.</p>");
+					}
+				});
+				
+				function generateToken(){
+					var date = new Date();
+					var milliseconds = date.getTime();
+					var token = milliseconds.toString(16);
+					console.log(token);
+					return token;
+				}
+				
+				function getDate(){
+					var date = new Date();
+					var month = date.getUTCMonth() + 1;
+					var day = date.getUTCDate();
+					var year = date.getUTCFullYear();
+					DMY = day + "/" + month + "/" + year;
+					return DMY;
+				}
+				
+				$.get('http://145.24.222.95:8181/get_tokens', function (json)
+				{
+					var table = "<thead><tr><th>NodeName:</th><th>Token:</th><th>Active:</th><th>Status:</th></tr></thead>";
+					table = table + "<tbody>";
+					
+					$.each(json, function (i, jsonobject)
+					{
+						table = table + "<tr><td>" + jsonobject.nodename + "</td><td>" + jsonobject.token + "</td><td>" + jsonobject.active + "</td>";
+						var date = new Date();
+						var milliseconds_since_epoch = date.getTime();	
+						
+						//When the last updated time is more than 30 intervals (900 minutes) status is set to inactive.
+						if((milliseconds_since_epoch - jsonobject.lastupdated) > 54000000) //54000000 = 900 minutes, which is 30 intervals.
+						{
+							table = table + "<td>Inactive</td>";
+						}
+						//When the last updated time is more than 3 intervals (90 minutes) status turns to intermittent failures.
+						else if (milliseconds_since_epoch - jsonobject.lastupdated > 5460000) //5460000 = 91 minutes, every interval is 30 minutes.
+						{
+							table = table + "<td>Intermittent Failures</td>";
+						}
+						else 
+						{
+							table = table + "<td>Active</td>";
+						}
+						table = table + "</tr>";
+					});	
+					
+					table = table + "</tbody>";
+					$( "#node_table" ).append(table);
+				});
+			});
+		</script>
 	</head>
 	<body>
 		<div class="header"><h1>CHIBB data visualisation Rianne Schattenberg (0896535)</h1></div>
@@ -51,7 +178,25 @@
 		</div>
 		<div class="content">
 			<div>
-				<p>Here, you can manage the sensor nodes of the CHIBB house.</p>
+				<p>Here, you can manage the sensor nodes of the CHIBB house and their tokens.</p>
+			</div>
+			<div>
+				<h2>Request a token:</h2>
+				<p>Here you can request a token for a new sensor node. <br>
+				If you request a node, a database table is automatically created for the sensor node as well.</p>
+				<input type="text" id="nodeNameInput" maxlength="200" placeholder="Node name" width="100">
+				<button id="requestButton">Get token</button>
+				<div id="token_display"></div>
+				
+				<h2>Toggle a token:</h2>
+				<p>Sets a sensor node to active or inactive.</p>
+				<input type="text" id="nodeToToggleInput" maxlength="200" placeholder="Node token" width="100">
+				<button id="toggleButton">Toggle token on/off</button>
+				<div id="toggle_display"></div>
+				
+				<h2>Node overview table:</h2>
+				<p>This table gives a overview of all of the tokens an their status.</p>
+				<table id="node_table"><table>
 			</div>
 		</div>
 	</body>

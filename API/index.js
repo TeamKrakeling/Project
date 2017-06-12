@@ -27,10 +27,6 @@ app.get('/token',function(req,res){
   res.sendFile(__dirname+'/view/tokenpage.html');
 });
 
-app.get('/unit_test',function(req,res){
-  res.sendFile(__dirname+'/view/UnitTest.html');
-});
-
 //Routes to indidual part of 0896024 Corné Verhoog.
 app.get('/0896024',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896024/0896024.html');});
@@ -78,7 +74,14 @@ app.post('/post', function(req, res){
 								{
 									if(err) throw err;
 									console.log("Posted data");
-								});											//TODO: Create table for created node?
+								});
+								
+								var date = new Date();
+								var milliseconds_since_epoch = date.getTime();	
+								
+								r.db(DBName).table("tokens").filter(req.body.token).update({lastupdated: milliseconds_since_epoch}).run(conn, function(err, DBres){
+									if(err) throw err;
+								});
 						} else if (result[0]["active"] == "false"){
 							console.log("ignored because the token isn't active");
 						}
@@ -156,7 +159,7 @@ app.post('/toggle_node', function (req, res) {
 					r.db(DBName).table("tokens").filter(req.body.content.fieldToUpdate).update({active: active_boolean}).run(conn, function(err, DBres){
 						if(err) throw err;
 							//console.log(DBres);
-						});
+					});
 				});
 		});
 		
@@ -222,18 +225,28 @@ app.get('/get_data',function(req, res){
 	var table = req.query.table;
 	var time_period = req.query.time_period;
 	if(table && time_period){	
-	
-		r.connect({ host: DBHost, port: DBPort }, function(err, conn){
-			if(err) throw err;
-			r.db(DBName).table(table).filter(function(doc){return doc('date').match(time_period)}).run(conn, function(err, cursor){
-			if (err) throw err;
-				cursor.toArray(function(err, result) {
+		request({
+			uri: "http://145.24.222.95:8181/get_tablelist",
+			method: "GET"
+		}, function(error, response, body)
+		{
+			if(body.indexOf(req.query.table) > 0)
+			{
+				r.connect({ host: DBHost, port: DBPort }, function(err, conn){
+					if(err) throw err;
+					r.db(DBName).table(table).filter(function(doc){return doc('date').match(time_period)}).run(conn, function(err, cursor){
 					if (err) throw err;
+						cursor.toArray(function(err, result) {
+							if (err) throw err;
 					
-					console.log("*Get data from database*:");
-					res.json(result);
+							console.log("*Get data from database*:");
+							res.json(result);
+						});
+					});
 				});
-			});
+			} else {
+				console.log("table doesn't exist");
+			}
 		});
 	}
 	else

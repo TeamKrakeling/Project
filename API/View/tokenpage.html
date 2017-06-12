@@ -113,17 +113,39 @@
 						var nodename = row.insertCell(0);
 						var token = row.insertCell(1);
 						var active = row.insertCell(2);
+						var status = row.insertCell(3);
 						nodename.innerHTML = jsonobject.nodename;
 						token.innerHTML = jsonobject.token;
 						active.innerHTML = jsonobject.active;
+						
+						var date = new Date();
+						var milliseconds_since_epoch = date.getTime();	
+			
+						//When the last updated time is more than 30 intervals (900 minutes) status turns to inactive.
+						if((milliseconds_since_epoch - jsonobject.lastupdated) > 54000000) //54000000 = 900 minutes, which is 30 intervals.
+						{
+							status.innerHTML = "Inactive";
+						}
+						//When the last updated time is more than 3 intervals (90 minutes) status turns to intermittent failures.
+						else if (milliseconds_since_epoch - jsonobject.lastupdated > 5460000) //5460000 = 91 minutes, every interval is 30 minutes.
+						{
+							status.innerHTML = "Intermittent Failure";
+						}
+						else {
+							status.innerHTML = "Active";
+						}
+						
+						
 					});	
 					var row = table.insertRow(0);
 					var nodename = row.insertCell(0);
 					var token = row.insertCell(1);
 					var active = row.insertCell(2);
+					var status = row.insertCell(3);
 					nodename.innerHTML = "NodeName:";
 					token.innerHTML = "Token:";	
-					active.innerHTML = "Active";
+					active.innerHTML = "Active:";
+					status.innerHTML = "Status:";
 				});
 			});
 		</script>
