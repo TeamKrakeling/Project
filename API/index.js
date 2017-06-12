@@ -31,9 +31,18 @@ app.get('/unit_test',function(req,res){
   res.sendFile(__dirname+'/view/UnitTest.html');
 });
 
-app.get('/visualisation_0896024',function(req,res){
-  res.sendFile(__dirname+'/view/visualisation/0896024/visualisation_0896024.html');
-});
+
+
+//routes to indidual part of 0896024 Corné Verhoog.
+app.get('/0896024',function(req,res)
+{res.sendFile(__dirname+'/view/individual_parts/0896024/0896024.html');});
+app.get('/visualisation_0896024',function(req,res)
+{res.sendFile(__dirname+'/view/individual_parts/0896024/visualisation_0896024.html');});
+app.get('/node_manager_0896024',function(req,res)
+{res.sendFile(__dirname+'/view/individual_parts/0896024/node_manager_0896024.html');});
+//routes to indidual part of 0896024 Corné Verhoog.
+
+
 
 
 //Handles all regular post calls to our api
@@ -62,7 +71,7 @@ app.post('/post', function(req, res){
 						var resultJson = JSON.stringify(result, null, 2);
 						console.log("*Get token*:");
 						
-						if(result[0]["token"] === req.body.token){
+						if((result[0]["token"] === req.body.token) && result[0]["active"] == "true"){
 							console.log("Tokens match");
 								if(err) throw err;
 								r.db(DBName).table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
@@ -70,7 +79,10 @@ app.post('/post', function(req, res){
 									if(err) throw err;
 									console.log("Posted data");
 								});											//TODO: Create table for created node?
-						} else {
+						} else if (result[0]["active"] == "false"){
+							console.log("ignored because the token isn't active");
+						}
+						else {
 							console.log("Tokens don't match");
 						}
 					});
@@ -123,19 +135,31 @@ app.post('/post_token_creator', function(req, res){
 	});
 });
 
-//Handles the update calls to the token table.
-//It expects a json with a 'content' content field with some specified variables
-//It expects the 'content' field to contain 'fieldToUpdate' (with an identifier of the table entry (or entries) you want to update) and 'update' (with the field you want to update, and what you want to change it to)
-app.post('/update_node', function (req, res) {
-	console.log("*update_node*: ");
-    console.log(req.body);
-
+//It expects a json with a 'content' content field with an identifier to a entry in the token table (which will be the token variable)
+//It expects the 'content' field to contain 'fieldToUpdate' (with an identifier of the table entry (or entries) you want to update) and toggles the node active status
+app.post('/toggle_node', function (req, res) {
+	console.log("toggle_node");
+	
+	var active_boolean = "";
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.db(DBName).table("tokens").filter(req.body.content.fieldToUpdate).update(req.body.content.update).run(conn, function(err, DBres){
-			if(err) throw err;
-			console.log(DBres);
+		r.db(DBName).table("tokens").filter(function(doc){return doc('token').match(req.body.content.fieldToUpdate.token)}).run(conn, function(err, cursor){
+			if (err) throw err;
+				cursor.toArray(function(err, result) {
+					if (err) throw err;
+			
+					if (result[0].active == "true") {
+						active_boolean = "false";
+					} else {
+						active_boolean = "true";
+					}
+					r.db(DBName).table("tokens").filter(req.body.content.fieldToUpdate).update({active: active_boolean}).run(conn, function(err, DBres){
+						if(err) throw err;
+							//console.log(DBres);
+						});
+				});
 		});
+		
 	});
 });
 
@@ -176,7 +200,7 @@ app.get('/get_tablelist',function(req, res){
 
 //Get a list of all tokens
 app.get('/get_tokens',function(req, res){
-	res.writeHead(200, {'Content-Type': 'text/html'});
+	//res.writeHead(200, {'Content-Type': 'text/html'});
 	
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
@@ -185,10 +209,8 @@ app.get('/get_tokens',function(req, res){
 			cursor.toArray(function(err, result) {
 				if (err) throw err;
 				
-				var resultJson = JSON.stringify(result, null, 2);
 				console.log("*Get tokens*:");
-				//console.log(resultJson);
-				res.end(resultJson);
+				res.send(result);
 			});
 		});
 	});
@@ -207,10 +229,8 @@ app.get('/get_data',function(req, res){
 			if (err) throw err;
 				cursor.toArray(function(err, result) {
 					if (err) throw err;
-				
-					var resultJson = JSON.stringify(result, null, 2);
+					
 					console.log("*Get data from database*:");
-					//console.log(resultJson);
 					res.json(result);
 				});
 			});

@@ -7,9 +7,58 @@
 	min-width: 400px;
 	max-width: 800px;
 }
-</style>
 
-<div id="container"></div>
+ul
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #884343;
+}
+
+li
+{
+    float: left;
+}
+
+li a
+{
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.current
+{background-color: #111;}
+
+li a:hover
+{
+    background-color: #111;
+}
+</style>
+<body>
+
+<ul>
+  <li><a href="http://145.24.222.95:8181">Home</a></li>
+  <li><a href="http://145.24.222.95:8181/0896024">0896024's page</a></li>
+  <li class="current"><a>Visualisation</a></li>
+  <li><a href="http://145.24.222.95:8181/node_manager_0896024">Node Manager</a></li>
+</ul>
+
+<img src="http://concepthousevillage.nl/userfiles/banners/04-CHIBB.jpg"><img>
+<div id="chart"></div>
+
+<br><br><br>
+<footer>
+<a>Created by Corn&#233; Verhoog<a> <br>
+<a>Student of Hogeschool Rotterdam<a>
+</footer>
+</body>
+
+
 
 <script>
 var gv_dataset = [],
@@ -19,7 +68,7 @@ var gv_dataset = [],
 function createChart()
 {
 
-    Highcharts.stockChart('container',
+    Highcharts.stockChart('chart',
 	{
 		
 		//add °C next to the y-axis values.
@@ -39,18 +88,20 @@ function createChart()
     });
 }
 
+//loops through till all data sets are loaded.
 $.each(gv_table_names, function (i, pm_table_name)
 {
 	
 	//data array that's to be loaded in the graph containing arrays per datapoint with time in milliseconds since epoch (1970) and temperaturevalue.
 	var lv_data_array = [];	
 	
-	$.get('http://145.24.222.95:8181/get_data?table=' + pm_table_name + '&time_period=2017', function (json) {
+	$.get('http://145.24.222.95:8181/get_data?table=' + pm_table_name + '&time_period=2017', function (json)
+	{
 		
 		$.each(json, function (i, jsonobject)
 		{			
 						
-			//parses date to milliseconds since epoch
+			//parses date to milliseconds since epoch.
 			var lv_milliseconds_date = parsedate(jsonobject.date);
 			
 			var lv_temperature;
@@ -60,7 +111,7 @@ $.each(gv_table_names, function (i, pm_table_name)
 			{
 				lv_temperature = parseInt(jsonobject.temperature)/10;
 				
-				//parses hours to miliseconds
+				//parses hours to miliseconds.
 				lv_milliseconds_time = ((jsonobject.time) * 60) * 60000;
 			}
 			else
@@ -69,7 +120,7 @@ $.each(gv_table_names, function (i, pm_table_name)
 				
 				//splits hours and minutes.
 				var lv_time_array = jsonobject.time.toString().split(':');
-				//parses time to milliseconds since epoch
+				//parses time to milliseconds since epoch.
 				lv_milliseconds_time = parsetime(lv_time_array);
 			}
 			 
@@ -85,7 +136,7 @@ $.each(gv_table_names, function (i, pm_table_name)
 		});
 		
 		
-		//sorts the data in right order based on the first value (which is milliseconds since epoch in this case)
+		//sorts the data in right order based on the first value (which is milliseconds since epoch in this case).
 		lv_data_array.sort();
 		
 		

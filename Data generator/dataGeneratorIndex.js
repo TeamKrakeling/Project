@@ -38,7 +38,7 @@ function requestSenderTemperatures(temp_node)
 			content: {
 				date: date,
 				time: time,
-				temperature: Math.floor(Math.random() * 5) + 18
+				temperature: Math.floor(Math.random() * 15) + 15
 			}
 		}
 	}, function(error, response, body)
@@ -137,7 +137,7 @@ function getCurrentDate(returnType)
 
 	if(returnType === "yyyymmdd") 
 	{
-		var month = date.getUTCMonth() + 1 - 5;
+		var month = date.getUTCMonth() + 1;
 		var day = date.getUTCDate();
 		var year = date.getUTCFullYear();
 		var yyyymmdd = year + "";

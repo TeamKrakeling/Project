@@ -1,0 +1,221 @@
+<!--The functionality/back-end of this page is the same for both people who worked on this project-->
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+$(document).ready(function()
+{	
+	//TODO: This JQuery part could be removed later if not needed anymore
+	$('#requestButton').click(function()
+	{
+		console.log("Klik request");
+		nodeName = $("#nodeNameInput").val();
+		if (nodeName.length > 0)
+		{
+			token = generateToken();
+			$("#token_display").html("<p>Token: " + token + "</p>");
+			var data = {};
+
+			var content	= {};					
+			content["nodename"] = nodeName;
+			content["date"] = getDate();
+			content["token"] = token;
+			content["active"] = true;
+						
+			data["content"] = content;
+					
+			console.log(data);
+						
+			$.post('/post_token_creator', data, function(data)
+			{
+				console.log(data);
+			}, 'json');
+					
+			$('#requestButton').prop('disabled', true);
+			setTimeout(function(){$('#requestButton').prop('disabled', false)}, 5000);
+		}
+		else
+		{
+			$("#token_display").html("<p>Please put in a node name.</p>");
+		}
+	});
+				
+	$('#deleteButton').click(function()
+	{
+		console.log("Klik delete");
+		nodeToken = $("#nodeToDeleteInput").val();
+		if (nodeToken.length > 0)
+		{
+			var data = {};
+			data["table"] = "tokens";
+						
+			var content	= {};	
+			content["token"] = nodeToken;
+						
+			data["content"] = content;
+						
+			console.log(data);
+						
+			$.post('/delete', data, function(data)
+			{
+				console.log(data);
+			}, 'json');
+						
+			$('#deleteButton').prop('disabled', true);
+			setTimeout(function(){$('#deleteButton').prop('disabled', false)}, 5000);
+		}
+		else
+		{
+			$("#delete_display").html("<p>Please put in a token to delete.</p>");
+		}
+	});
+				
+	$('#updateButton').click(function()
+	{
+		console.log("Klik update");
+		nodeToken = $("#nodeToUpdateInput").val();
+		if(nodeToken.length > 0)
+		{
+			var data = {};
+				
+			var content = {};
+			var fieldToUpdate = {};
+			fieldToUpdate["token"] = nodeToken;
+			content["fieldToUpdate"] = fieldToUpdate;
+					
+			data["content"] = content;
+			console.log(data);
+						
+			$.post('/toggle_node', data, function(data)
+			{
+				//console.log(data);
+			}, 'json');
+						
+			$('#updateButton').prop('disabled', true);
+			setTimeout(function(){$('#updateButton').prop('disabled', false)}, 5000);
+			location.reload();
+		}
+		else
+		{
+			$("#update_display").html("<p>Please put in a token to update.</p>");
+		}
+	});
+				
+	function generateToken()
+	{
+		var date = new Date();
+		var milliseconds = date.getTime();
+		var token = milliseconds.toString(16);
+		console.log(token);
+		return token;
+	}
+				
+	function getDate()
+	{
+		var date = new Date();
+		var month = date.getUTCMonth() + 1;
+		var day = date.getUTCDate();
+		var year = date.getUTCFullYear();
+		DMY = day + "/" + month + "/" + year;
+		return DMY;
+	}
+		
+	$.get('http://145.24.222.95:8181/get_tokens', function (json)
+	{
+		var table = document.getElementById("token_table");
+		$.each(json, function (i, jsonobject)
+		{
+			var row = table.insertRow(0);
+			var nodename = row.insertCell(0);
+			var token = row.insertCell(1);
+			var active = row.insertCell(2);
+			nodename.innerHTML = jsonobject.nodename;
+			token.innerHTML = jsonobject.token;
+			active.innerHTML = jsonobject.active;
+		});	
+		var row = table.insertRow(0);
+		var nodename = row.insertCell(0);
+		var token = row.insertCell(1);
+		var active = row.insertCell(2);
+		nodename.innerHTML = "NodeName:";
+		token.innerHTML = "Token:";	
+		active.innerHTML = "Active";
+	});
+});
+</script>
+</head>
+
+<style>
+ul
+{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #884343;
+}
+
+li
+{
+    float: left;
+}
+
+li a
+{
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.current
+{background-color: #111;}
+
+li a:hover
+{
+		background-color: #111;
+}
+
+table, th, td
+{
+   border: 1px solid black;
+}
+</style>
+
+<body>
+<ul>
+  <li><a href="http://145.24.222.95:8181">Home</a></li>
+  <li><a href="http://145.24.222.95:8181/0896024">0896024's page</a></li>
+  <li><a href="http://145.24.222.95:8181/visualisation_0896024">Visualisation</a></li>
+  <li class="current"><a>Node Manager</a></li>
+</ul>
+<img src="http://concepthousevillage.nl/userfiles/banners/04-CHIBB.jpg"><img>
+<br><br>
+
+	<h2>Request a token:</h2>
+	<input type="text" id="nodeNameInput" maxlength="200" placeholder="Node name" width="100">
+	<button id="requestButton">Get token</button>
+	<div id="token_display"></div>
+	<br><br>
+	<h2>Delete a token:</h2>
+	<input type="text" id="nodeToDeleteInput" maxlength="200" placeholder="Node token" width="100">
+	<button id="deleteButton">Delete token</button>
+	<div id="delete_display"></div>
+	<br><br>
+	<h2>Toggle a token:</h2>
+	<a>sets active status of a token on or off</a><br>
+	<input type="text" id="nodeToUpdateInput" maxlength="200" placeholder="Node token" width="100">
+	<button id="updateButton">Toggle token on/off</button>
+	<div id="update_display"></div>
+
+<br><br><br>	
+<table id="token_table"><table>
+	
+<br><br><br>
+<footer>
+<a>Created by Corn&#233 Verhoog<a> <br>
+<a>Student of Hogeschool Rotterdam<a>
+</footer>
+</body>
+</html>

@@ -1,8 +1,7 @@
-<!-- This page and it's content are for testing purposes -->
+<!--The functionality/back-end of this page is the same for both people who worked on this project-->
 <html>
 	<head>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		<script src="tokens.js"></script> <!-- TODO: Does not work, how do? -->
 		<script>
 			$(document).ready(function(){				//TODO: This JQuery part could be removed later if not needed anymore
 				$('#requestButton').click(function()
@@ -69,22 +68,20 @@
 						var data = {};
 						
 						var content = {};
-						var update = {};
 						var fieldToUpdate = {};
-						update["active"] = false;
 						fieldToUpdate["token"] = nodeToken;
-						content["update"] = update;
 						content["fieldToUpdate"] = fieldToUpdate;
 						
 						data["content"] = content;
 						console.log(data);
 						
-						$.post('/update_node', data, function(data){
-							console.log(data);
+						$.post('/toggle_node', data, function(data){
+							//console.log(data);
 						}, 'json');
 						
 						$('#updateButton').prop('disabled', true);
 						setTimeout(function(){$('#updateButton').prop('disabled', false)}, 5000);
+						location.reload();
 					} else {
 						$("#update_display").html("<p>Please put in a token to update.</p>");
 					}
@@ -106,6 +103,28 @@
 					DMY = day + "/" + month + "/" + year;
 					return DMY;
 				}
+				
+				$.get('http://145.24.222.95:8181/get_tokens', function (json)
+				{
+					var table = document.getElementById("token_table");
+					$.each(json, function (i, jsonobject)
+					{
+						var row = table.insertRow(0);
+						var nodename = row.insertCell(0);
+						var token = row.insertCell(1);
+						var active = row.insertCell(2);
+						nodename.innerHTML = jsonobject.nodename;
+						token.innerHTML = jsonobject.token;
+						active.innerHTML = jsonobject.active;
+					});	
+					var row = table.insertRow(0);
+					var nodename = row.insertCell(0);
+					var token = row.insertCell(1);
+					var active = row.insertCell(2);
+					nodename.innerHTML = "NodeName:";
+					token.innerHTML = "Token:";	
+					active.innerHTML = "Active";
+				});
 			});
 		</script>
 	</head>
@@ -120,9 +139,12 @@
 		<button id="deleteButton">Delete token</button>
 		<div id="delete_display"></div>
 		<br><br>
-		<h2>Update a token:</h2>
+		<h2>Toggle a token:</h2>
+		<a>sets active status of a token on or off</a><br>
 		<input type="text" id="nodeToUpdateInput" maxlength="200" placeholder="Node token" width="100">
-		<button id="updateButton">Update token</button>
+		<button id="updateButton">Toggle token on/off</button>
 		<div id="update_display"></div>
+		<br><br><br>	
+		<table id="token_table"><table>
 	</body>
 </html>
