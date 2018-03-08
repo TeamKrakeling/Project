@@ -29,7 +29,7 @@ function requestSenderTemperatures(temp_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{
@@ -56,7 +56,7 @@ function requestSenderHumidity(humid_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{
@@ -83,7 +83,7 @@ function requestSenderPH(humid_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{
@@ -110,7 +110,7 @@ function requestSenderLight(humid_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{

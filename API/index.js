@@ -50,7 +50,7 @@ app.post('/post', function(req, res){
     
 	//Check if the table exists
 	request({
-		uri: "http://145.24.222.95:8181/get_tablelist",
+		uri: "http://145.24.222.23:8181/get_tablelist",
 		method: "GET"
 	}, function(error, response, body)
 	{
@@ -118,7 +118,7 @@ app.post('/post_token_creator', function(req, res){
 			
 			//Check if table exists, so it doesn't crash if the program tries to create a table that already exists
 			request({
-				uri: "http://145.24.222.95:8181/get_tablelist",
+				uri: "http://145.24.222.23:8181/get_tablelist",
 				method: "GET"
 			}, function(error, response, body)
 			{
@@ -226,7 +226,7 @@ app.get('/get_data',function(req, res){
 	var time_period = req.query.time_period;
 	if(table && time_period){	
 		request({
-			uri: "http://145.24.222.95:8181/get_tablelist",
+			uri: "http://145.24.222.23:8181/get_tablelist",
 			method: "GET"
 		}, function(error, response, body)
 		{
