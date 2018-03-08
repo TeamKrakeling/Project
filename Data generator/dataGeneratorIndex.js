@@ -3,7 +3,7 @@
 // | Summary: The index file for the dummy data generator for our project. |
 // | It generates test data for our databse.                               |
 // | It will no longer be nescessary when we the real data generators are  |
-// | provided to us by school.                                             |
+// | provided to us by school.    test                                         |
 // *-----------------------------------------------------------------------*
 
 var express = require("express");
