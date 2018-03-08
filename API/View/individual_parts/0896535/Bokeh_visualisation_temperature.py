@@ -39,12 +39,12 @@ counter = 0;
 data_available = True
 for node in temperature_nodes.keys():
 	print processed_current_date
-	temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.95:8181/get_data?table=" + node + "&time_period=" + processed_current_date).read())
+	temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_current_date).read())
 	# Checks if data is returned. If not, it checks the previous day. If the previous day also does not have data available, there is no data available from recently enough
 	if len(temperature_nodes[node]) < 1:
 		yesterday = current_date - datetime.timedelta(days=1)
 		processed_yesterday = process_date(yesterday)
-		temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.95:8181/get_data?table=" + node + "&time_period=" + processed_yesterday).read())
+		temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_yesterday).read())
 		if len(temperature_nodes[node]) < 1:
 			data_available = False
 			break	
