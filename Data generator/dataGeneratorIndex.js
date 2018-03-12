@@ -12,6 +12,7 @@ var request = require("request");
 
 console.log("Start data generator");
 
+//All node names and tokens we want to generate data for
 var temperature_tokens = [["temperature_node_1", "15c87a77025"],["temperature_node_2", "15c87a7a361"],["temperature_node_3", "15c87a7b974"],["temperature_node_4", "15c87a7d423"],["temperature_node_5", "15c87a7f0b7"],["temperature_node_6", "15c87a80696"],["temperature_node_7", "15c87a81c78"],["temperature_node_8", "15c87a83397"],["temperature_node_9", "15c87a84912"],["temperature_node_10", "15c87a78da2"]];
 var humidity_tokens = [["humidity_node_1", "15c87a59689"],["humidity_node_2", "15c87a5cc4e"],["humidity_node_3", "15c87a5e80a"],["humidity_node_4", "15c87a60631"],["humidity_node_5", "15c87a623cf"],["humidity_node_6", "15c87a63b3f"],["humidity_node_7", "15c87a65460"],["humidity_node_8", "15c87a66dc4"],["humidity_node_9", "15c87a697be"],["humidity_node_10", "15c87a5b4bb"]];
 var wall_temperature = [["wall_temperature_node_1","15c87a8e9ff"],["wall_temperature_node_2","15c87a900c7"],["wall_temperature_node_3","15c87a916cb"],["wall_temperature_node_4","15c87a92f65"],["wall_temperature_node_5","15c87a94cca"]];
@@ -21,7 +22,7 @@ var plant_soil_humidity = [["plant_soil_humidity_1","15c87a6c8e6"],["plant_soil_
 var plant_soil_ph = [["plant_soil_ph_1","15c87a70f88"],["plant_soil_ph_2","15c87a72660"],["plant_soil_ph_3","15c87a73cf7"]];
 var plant_light = [["plant_light","15c87a6b1fc"]];
 
-//--Data generation functions
+//--Data generation functions. These send dummy data to the node tables.
 function requestSenderTemperatures(temp_node)
 {
 	var table_name = temp_node[0];
@@ -144,18 +145,15 @@ function getCurrentDate(returnType)
 		var year = date.getUTCFullYear();
 		var yyyymmdd = year + "";
 		
-		if(month < 10)
-		{
+		if(month < 10){
 			yyyymmdd+= "0";
 		}
 		yyyymmdd+= month + "";
 		
-		if(day < 10)
-		{
+		if(day < 10){
 			yyyymmdd+= "0";
 		}
-		yyyymmdd+= day;
-		
+		yyyymmdd+= day;		
 		return yyyymmdd;
 	} 
 	else if(returnType === "Time") 
@@ -163,22 +161,20 @@ function getCurrentDate(returnType)
 		var hours = date.getUTCHours();
 		var minutes = date.getUTCMinutes();
 		
-		if(minutes < 10)
-		{
+		if(minutes < 10){
 			var time = hours + ":" + "0" + minutes;
 		}
-		else
-		{
+		else{
 			var time = hours + ":" + minutes;
 		}
 		return time;
 	}
-	else 
-	{
+	else{
 		return date;
 	}
 }
 
+//This runs all of the data generation requests every 30 minutes
 setInterval(function()
 {
 	console.log("Send data");
@@ -207,4 +203,4 @@ setInterval(function()
 		requestSenderLight(element);
 	});
 	
-}, 1800000);	//1800000 goes every half hour
+}, 1800000);	//1800000 milliseconds, which means it goes every half hour

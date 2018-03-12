@@ -13,6 +13,7 @@ from bokeh.models.widgets import Panel, Tabs
 from bokeh.embed import (components, autoload_static)
 
 # Function definitions
+# A function that processes a date object so it is styled the same way as the dates in the database 
 def process_date(date):
 	processed = str(date.year) 
 	if date.month < 10:
@@ -23,6 +24,7 @@ def process_date(date):
 	processed = processed + str(date.day)
 	return processed
 
+# The function that creates the plot
 def create_plot():
 	print "Create plot."
 	# Collect the data
@@ -42,7 +44,6 @@ def create_plot():
 			processed_yesterday = process_date(yesterday)
 			temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_yesterday).read())
 			if len(temperature_nodes[node]) < 1:
-				print "false"
 				data_available = False
 				break	
 		room_temps.append(temperature_nodes[node][0]['temperature'])
@@ -109,15 +110,15 @@ def create_plot():
 
 		# Write everything into an html file so the plot can be added to the site
 		html_links = """<link
-	href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
-	rel="stylesheet" type="text/css">
-	<link
-	href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.css"
-	rel="stylesheet" type="text/css">
-	<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
-	<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
-	"""
-
+href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
+rel="stylesheet" type="text/css">
+<link
+href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.css"
+rel="stylesheet" type="text/css">
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
+"""
+		
 		script, div = components(p)
 		div_file = open("house_temperature_visualisation_div.html", "w")
 		div_file.write(html_links)

@@ -32,7 +32,7 @@ app.get('/token',function(req,res){
   res.sendFile(__dirname+'/view/tokenpage.html');
 });
 
-//Routes to indidual part of 0896024 Corné Verhoog.
+//Routes to indidual part of 0896024 Corné Verhoog (0896024)
 app.get('/0896024',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896024/0896024.html');});
 app.get('/visualisation_0896024',function(req,res)
@@ -77,12 +77,15 @@ app.post('/post', function(req, res){
 						if((result[0]["token"] === req.body.token) && result[0]["active"] == "true"){
 							console.log("Tokens match");
 								if(err) throw err;
+								
+								//Insert the data
 								r.db(DBName).table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
 								{
 									if(err) throw err;
 									console.log("Posted data");
 								});
 								
+								//Update the last_updated field of the node in the tokens table, so we know it has been updated
 								var date = new Date();
 								var milliseconds_since_epoch = date.getTime();	
 								
@@ -106,7 +109,7 @@ app.post('/post', function(req, res){
 });
 
 //This is a pre-fabricated post for creating nodes/tokens
-//It expects a json with a 'content' (with all the information fields for a token :'date', 'nodedname', 'token' and 'active')
+//It expects a json with a 'content' (with all the information fields for a token: 'date', 'nodedname', 'token' and 'active')
 app.post('/post_token_creator', function(req, res){
 	console.log("*post token creator*: ");
     res.writeHead(200, {'Content-Type': 'text/html'});
@@ -119,7 +122,6 @@ app.post('/post_token_creator', function(req, res){
 		if(err) throw err;
 		r.db(DBName).table("tokens").insert(req.body.content).run(conn, function(err, DBres){
 			if(err) throw err;
-			//console.log(DBres);
 			console.log(req.body.content);
 			console.log(req.body.content.nodename);
 			
@@ -145,6 +147,7 @@ app.post('/post_token_creator', function(req, res){
 	});
 });
 
+//An update function that toggles the 'active' field of a node between true and false
 //It expects a json with a 'content' content field with an identifier to an entry in the token table (which will be the token variable)
 //It expects the 'content' field to contain 'fieldToUpdate' (with an identifier of the table entry (or entries) you want to update) and toggles the node active status
 app.post('/toggle_node', function (req, res) {
@@ -165,7 +168,6 @@ app.post('/toggle_node', function (req, res) {
 					}
 					r.db(DBName).table("tokens").filter(req.body.content.fieldToUpdate).update({active: active_boolean}).run(conn, function(err, DBres){
 						if(err) throw err;
-							//console.log(DBres);
 					});
 				});
 		});
@@ -200,7 +202,6 @@ app.get('/get_tablelist',function(req, res){
 				
 				var resultJson = JSON.stringify(result, null, 2);
 				console.log("*Get tablelist*:");
-				//console.log(resultJson);
 				res.end(resultJson);
 			});
 		});
@@ -209,8 +210,6 @@ app.get('/get_tablelist',function(req, res){
 
 //Get a list of all tokens
 app.get('/get_tokens',function(req, res){
-	//res.writeHead(200, {'Content-Type': 'text/html'});
-	
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
 		r.db(DBName).table('tokens').run(conn, function(err, cursor){
