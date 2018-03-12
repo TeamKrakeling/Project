@@ -3,12 +3,14 @@
 // | Summary: The index file for the dummy data generator for our project. |
 // | It generates test data for our databse.                               |
 // | It will no longer be nescessary when we the real data generators are  |
-// | provided to us by school.                                             |
+// | provided to us by school.    test                                         |
 // *-----------------------------------------------------------------------*
 
 var express = require("express");
 var app     = express();
 var request = require("request");
+
+console.log("Start data generator");
 
 var temperature_tokens = [["temperature_node_1", "15c87a77025"],["temperature_node_2", "15c87a7a361"],["temperature_node_3", "15c87a7b974"],["temperature_node_4", "15c87a7d423"],["temperature_node_5", "15c87a7f0b7"],["temperature_node_6", "15c87a80696"],["temperature_node_7", "15c87a81c78"],["temperature_node_8", "15c87a83397"],["temperature_node_9", "15c87a84912"],["temperature_node_10", "15c87a78da2"]];
 var humidity_tokens = [["humidity_node_1", "15c87a59689"],["humidity_node_2", "15c87a5cc4e"],["humidity_node_3", "15c87a5e80a"],["humidity_node_4", "15c87a60631"],["humidity_node_5", "15c87a623cf"],["humidity_node_6", "15c87a63b3f"],["humidity_node_7", "15c87a65460"],["humidity_node_8", "15c87a66dc4"],["humidity_node_9", "15c87a697be"],["humidity_node_10", "15c87a5b4bb"]];
@@ -29,7 +31,7 @@ function requestSenderTemperatures(temp_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{
@@ -56,7 +58,7 @@ function requestSenderHumidity(humid_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{
@@ -83,7 +85,7 @@ function requestSenderPH(humid_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{
@@ -110,7 +112,7 @@ function requestSenderLight(humid_node)
 	
 	request(
 	{
-		uri: "http://145.24.222.95:8181/post",
+		uri: "http://145.24.222.23:8181/post",
 		method: "POST",
 		form:
 		{
@@ -179,6 +181,7 @@ function getCurrentDate(returnType)
 
 setInterval(function()
 {
+	console.log("Send data");
 	temperature_tokens.forEach(function(element){
 		requestSenderTemperatures(element);
 	});
