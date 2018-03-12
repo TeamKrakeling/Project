@@ -18,6 +18,11 @@ var DBName		= 'ICTlab'
 app.use(bodyParser.json()); 							//support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 
+//use ejs for dynamic html page
+app.set('views', __dirname+'/View');
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'ejs');
+
 //Links various urls to their respective html pages
 app.get('/',function(req,res){
   res.sendFile(__dirname+'/View/index.html');
@@ -33,7 +38,7 @@ app.get('/0896024',function(req,res)
 app.get('/visualisation_0896024',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896024/visualisation_0896024.html');});
 app.get('/node_manager_0896024',function(req,res)
-{res.sendFile(__dirname+'/view/individual_parts/0896024/node_manager_0896024.html');});
+{res.sendFile('individual_parts/0896024/node_manager_0896024.html');});
 
 //Routes to indidual part of Rianne Schattenberg (0896535)
 app.get('/0896535',function(req,res)
