@@ -3,6 +3,7 @@ import urllib2
 import json
 import datetime
 import schedule
+import time
 
 from bokeh.plotting import figure, output_file, show
 from bokeh.palettes import Plasma11 as palette
@@ -23,6 +24,7 @@ def process_date(date):
 	return processed
 
 def create_plot():
+	print "Create plot."
 	# Collect the data
 	current_date = datetime.date.today()
 	processed_current_date = process_date(current_date)
@@ -43,9 +45,6 @@ def create_plot():
 				print "false"
 				data_available = False
 				break	
-		print temperature_nodes[node][0]['date']
-		print temperature_nodes[node][0]['time']
-		print temperature_nodes[node][0]['temperature']
 		room_temps.append(temperature_nodes[node][0]['temperature'])
 
 	if data_available:
@@ -130,4 +129,8 @@ def create_plot():
 
 # Run the code every 30 minutes
 schedule.every(30).minutes.do(create_plot)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 
