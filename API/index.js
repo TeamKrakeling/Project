@@ -86,7 +86,7 @@ app.post('/post', function(req, res){
 								var date = new Date();
 								var milliseconds_since_epoch = date.getTime();	
 								
-								r.db(DBName).table("tokens").filter(req.body.token).update({lastupdated: milliseconds_since_epoch}).run(conn, function(err, DBres){
+								r.db(DBName).table("tokens").filter({token:req.body.token}).update({last_updated: milliseconds_since_epoch}).run(conn, function(err, DBres){
 									if(err) throw err;
 								});
 						} else if (result[0]["active"] == "false"){
@@ -145,7 +145,7 @@ app.post('/post_token_creator', function(req, res){
 	});
 });
 
-//It expects a json with a 'content' content field with an identifier to a entry in the token table (which will be the token variable)
+//It expects a json with a 'content' content field with an identifier to an entry in the token table (which will be the token variable)
 //It expects the 'content' field to contain 'fieldToUpdate' (with an identifier of the table entry (or entries) you want to update) and toggles the node active status
 app.post('/toggle_node', function (req, res) {
 	console.log("toggle_node");
@@ -169,7 +169,6 @@ app.post('/toggle_node', function (req, res) {
 					});
 				});
 		});
-		
 	});
 });
 

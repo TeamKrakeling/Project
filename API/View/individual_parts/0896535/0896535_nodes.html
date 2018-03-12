@@ -99,7 +99,7 @@
 						var content	= {};					
 						content["nodename"] = nodeName;
 						content["date"] = getDate();
-						content["token"] = token;		
+						content["token"] = token;	
 						content["active"] = true;
 						
 						data["content"] = content;
@@ -178,13 +178,14 @@
 						var date = new Date();
 						var milliseconds_since_epoch = date.getTime();	
 						
+						console.log(jsonobject);
 						//When the last updated time is more than 30 intervals (900 minutes) status is set to inactive.
-						if((milliseconds_since_epoch - jsonobject.lastupdated) > 54000000) //54000000 = 900 minutes, which is 30 intervals.
+						if((milliseconds_since_epoch - jsonobject.last_updated) > 54000000) //54000000 = 900 minutes, which is 30 intervals.
 						{
 							table = table + "<td><span class='redDot'></span>Inactive</td>";
 						}
 						//When the last updated time is more than 3 intervals (90 minutes) status turns to intermittent failures.
-						else if (milliseconds_since_epoch - jsonobject.lastupdated > 5460000) //5460000 = 91 minutes, every interval is 30 minutes.
+						else if (milliseconds_since_epoch - jsonobject.last_updated > 5460000) //5460000 = 91 minutes, every interval is 30 minutes.
 						{
 							table = table + "<td><span class='orangeDot'></span>Intermittent Failures</td>";
 						}
