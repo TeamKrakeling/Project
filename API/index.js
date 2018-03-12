@@ -55,7 +55,7 @@ app.post('/post', function(req, res){
     res.writeHead(200, {'Content-Type': 'text/html'});
 	res.end('acknowledgement');
     
-	//Check if the table exists
+	//Check if a table is given and the table exists
 	request({
 		uri: "http://145.24.222.23:8181/get_tablelist",
 		method: "GET"
@@ -102,8 +102,8 @@ app.post('/post', function(req, res){
 				});
 			});
 		} else {
-			console.log("The table '" + req.body.table + "' does not exist.");
-			res.end("The table '" + req.body.table + "' does not exist.");
+			console.log("The table does not exist.");
+			res.end("The table does not exist.");
 		}
 	});
 });
