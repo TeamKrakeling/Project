@@ -6,14 +6,9 @@ import datetime
 from bokeh.plotting import figure, output_file, show
 from bokeh.palettes import Plasma11 as palette
 from bokeh.plotting import figure
-from bokeh.models import (
-    ColumnDataSource,
-    HoverTool,
-    LinearColorMapper,
-	Label
-)
+from bokeh.models import (ColumnDataSource, HoverTool, LinearColorMapper, Label)
 from bokeh.models.widgets import Panel, Tabs
-from bokeh.embed import components
+from bokeh.embed import (components, autoload_static)
 
 # Function definitions
 def process_date(date):
@@ -116,12 +111,20 @@ if data_available:
 	show(p)
 
 	# Write everything into html files so the plots can be added to the site
-	script, div = components(p)
+	html_links = """<link
+href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
+rel="stylesheet" type="text/css">
+<link
+href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.css"
+rel="stylesheet" type="text/css">
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
+"""
 
-	script_file = open("house_temperature_visualisation_script.html", "w")
-	script_file.write(script)
-	script_file.close()
+	script, div = components(p)
 	div_file = open("house_temperature_visualisation_div.html", "w")
+	div_file.write(html_links)
+	div_file.write(script)
 	div_file.write(div)
 	div_file.close()
 else:
