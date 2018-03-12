@@ -10,7 +10,7 @@ from bokeh.models import (
     ColumnDataSource,
     HoverTool,
     LinearColorMapper,
-	Legend
+	Label
 )
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.embed import components
@@ -35,7 +35,6 @@ processed_current_date = process_date(current_date)
 temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
 
 room_temps = []
-counter = 0;
 data_available = True
 for node in temperature_nodes.keys():
 	print processed_current_date
@@ -46,33 +45,34 @@ for node in temperature_nodes.keys():
 		processed_yesterday = process_date(yesterday)
 		temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_yesterday).read())
 		if len(temperature_nodes[node]) < 1:
+			print "false"
 			data_available = False
 			break	
 	print temperature_nodes[node][0]['date']
 	print temperature_nodes[node][0]['time']
 	print temperature_nodes[node][0]['temperature']
 	room_temps.append(temperature_nodes[node][0]['temperature'])
-	data_available
-	counter += 1
 
 if data_available:
 	# Prepare the data
-	legend_xs = [[34,34,35,35],[34,34,35,35]]
-	legend_ys = [[13,14,14,13],[12,13,13,12]]
+	legend_xs = [[33,33,34,34] for x in range (23)]
+	legend_ys = [[12.5-0.5*x,13-0.5*x,13-0.5*x,12.5-0.5*x] for x in range (23)]
+	legend_temp_names = [str(x) + "° C" for x in range(10, 33)]
+	legend_temps = [x for x in range (10, 33)]
 
-	house_xs = [[1,1,8,8],[1,1,8,8],[1,1,8,8,10,10],[8,8,16,16],[10,10,16,16],[23,23,32,32]]
+	house_xs = [[1,1,8,8],[1,1,8,8],[1,1,8,8,10,10],[8,8,16,16],[10,10,16,16],[22,22,31,31]]
 	house_ys = [[10,14,14,10],[6,10,10,6],[1,6,6,8,8,1],[8,14,14,8],[4,8,8,4],[1,14,14,1]]
 	room_names = ["bedroom","bedroom","living room","hall","bathroom","living room"]
 
 	color_mapper = LinearColorMapper(palette=palette)
 
 	source = ColumnDataSource(data=dict(
-		x=house_xs,
-		y=house_ys,
-		name=room_names,
-		temp=room_temps
+		x=house_xs + legend_xs,
+		y=house_ys + legend_ys,
+		name=room_names + legend_temp_names,
+		temp=room_temps + legend_temps
 	))
-
+	
 	TOOLS = "reset,hover,save"
 
 	# Create the visualisation
@@ -89,20 +89,31 @@ if data_available:
 		line_color="white", 
 		line_width=3
 	)
-
-	# TODO: Add a legend?
-
+	
+	# Add text to the visualisation
+	text_counter = 0
+	for item in room_names:
+		mytext = Label(x=house_xs[text_counter][0] + 0.5, y=house_ys[text_counter][0] + 0.2, text=room_names[text_counter], text_color='black')
+		p.add_layout(mytext)
+		text_counter += 1
+	
+	legend_text = Label(x=33, y=13.5, text="Legend",text_color='black')
+	p.add_layout(legend_text)
+	legend_text_2 = Label(x=34.25, y=12.5, text="10°",text_color='black')
+	p.add_layout(legend_text_2)
+	legend_text_3 = Label(x=34.25, y=7, text="21°",text_color='black')
+	p.add_layout(legend_text_3)
+	legend_text_4 = Label(x=34.25, y=1.5, text="32°",text_color='black')
+	p.add_layout(legend_text_4)
 
 	# Set the tooltip content
 	hover = p.select_one(HoverTool)
 	hover.tooltips = [
-		("Room", "@name"),
 		("Temperature (°C)", "@temp"),
 	]
 
 	# Show the results
 	show(p)
-
 
 	# Write everything into html files so the plots can be added to the site
 	script, div = components(p)
@@ -114,4 +125,4 @@ if data_available:
 	div_file.write(div)
 	div_file.close()
 else:
-	print "There is no data available"
+	print "There is no data available. Please check if all nodes are funtioning correctly. "
