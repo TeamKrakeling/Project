@@ -25,10 +25,38 @@
 				width: 98%;
 				margin-left:2%;
 			}
+			
+			.redDot {
+				height: 10px;
+				width: 10px;
+				margin-right: 10%;
+				background-color:#f44242;
+				border-radius: 50%;
+				display: inline-block;
+			}
+			
+			.orangeDot {
+				height: 10px;
+				width: 10px;
+				margin-right: 10%;
+				background-color:#f49b42;
+				border-radius: 50%;
+				display: inline-block;
+			}
+			
+			.greenDot {
+				height: 10px;
+				width: 10px;
+				margin-right: 10%;
+				background-color:#71f441;
+				border-radius: 50%;
+				display: inline-block;
+			}
 
 			th {
 				background-color:#91f8b7;
 				font-size: 1.2em;
+				min-width: 90px;
 			}
 
 			p {
@@ -140,23 +168,29 @@
 					
 					$.each(json, function (i, jsonobject)
 					{
-						table = table + "<tr><td>" + jsonobject.nodename + "</td><td>" + jsonobject.token + "</td><td>" + jsonobject.active + "</td>";
+						table = table + "<tr><td>" + jsonobject.nodename + "</td><td>" + jsonobject.token + "</td>";
+						if(jsonobject.active == "true"){
+							table = table + "<td><span class='greenDot'></span>" + jsonobject.active + "</td>";
+						} else {
+							table = table + "<td><span class='redDot'></span>" + jsonobject.active + "</td>";
+						}
+						
 						var date = new Date();
 						var milliseconds_since_epoch = date.getTime();	
 						
 						//When the last updated time is more than 30 intervals (900 minutes) status is set to inactive.
 						if((milliseconds_since_epoch - jsonobject.lastupdated) > 54000000) //54000000 = 900 minutes, which is 30 intervals.
 						{
-							table = table + "<td>Inactive</td>";
+							table = table + "<td><span class='redDot'></span>Inactive</td>";
 						}
 						//When the last updated time is more than 3 intervals (90 minutes) status turns to intermittent failures.
 						else if (milliseconds_since_epoch - jsonobject.lastupdated > 5460000) //5460000 = 91 minutes, every interval is 30 minutes.
 						{
-							table = table + "<td>Intermittent Failures</td>";
+							table = table + "<td><span class='orangeDot'></span>Intermittent Failures</td>";
 						}
 						else 
 						{
-							table = table + "<td>Active</td>";
+							table = table + "<td><span class='greenDot'></span>Active</td>";
 						}
 						table = table + "</tr>";
 					});	
