@@ -125,7 +125,11 @@ def create_plot():
 		div_file.write(div)
 		div_file.close()
 	else:
+		# When there is no (recent) data, a message is printed, and a message is displayed instead of the visualisation.
 		print "There is no data available. Please check if all nodes are funtioning correctly. "
+		div_file = open("house_temperature_visualisation_div.html", "w")
+		div_file.write("<div><p>There is no data available, or the data available is more than 2 days old. Please check if all nodes are funtioning correctly.</p></div>")
+		div_file.close()
 
 # Run the code every 30 minutes
 schedule.every(30).minutes.do(create_plot)
