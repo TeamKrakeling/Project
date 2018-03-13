@@ -174,21 +174,6 @@ app.post('/toggle_node', function (req, res) {
 	});
 });
 
-//Handles all delete calls to the api
-//It expects a json with the following fields: 'table' (with the name of the table you want to delete data from) and 'content' (with the id of the table entry you want to delete)
-app.post('/delete', function (req, res){		//TODO: Add a confirmation before deleting? Or some kind of protection?
-	console.log("*delete*: ");
-    console.log(req.body);
-
-	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
-		if(err) throw err;
-		r.db(DBName).table(req.body.table).filter(req.body.content).delete().run(conn, function(err, DBres){
-			if(err) throw err;
-			console.log(DBres);
-		});
-	});
-});
-
 //Get a list of all the tables in the database
 app.get('/get_tablelist',function(req, res){
 	res.writeHead(200, {'Content-Type': 'text/html'});
@@ -212,7 +197,7 @@ app.get('/get_tablelist',function(req, res){
 app.get('/get_tokens',function(req, res){
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.db(DBName).table('tokens').run(conn, function(err, cursor){
+		r.db(DBName).table('tokens').orderBy("nodename").run(conn, function(err, cursor){
 			if (err) throw err;
 			cursor.toArray(function(err, result) {
 				if (err) throw err;
@@ -256,7 +241,7 @@ app.get('/get_data',function(req, res){
 	}
 	else
 	{
-		res.end("error pass variables")
+		res.end("error: pass variables")
 	}
 });
 
