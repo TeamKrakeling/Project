@@ -113,13 +113,31 @@ def create_house_current_temp_plot():
 			("Temperature (°C)", "@temp"),
 		]
 		
+		return p, True
 		# Send everyting to the write plot file function
-		file_name = "house_temperature_visualisation_div.html"
-		write_plot_file(p, file_name)
+		#file_name = "house_temperature_visualisation_div.html"
+		#write_plot_file(p, file_name)
 	else:
-		file_name = "house_temperature_visualisation_div.html"
-		error_message = "There is no data available, or the data available is more than 2 days old. Please check if all nodes are funtioning correctly. "
-		write_plot_file_error(file_name, error_message)
+		return p, False
+
+def create_temperature_history_plot():
+	print "Create temperature history plot."
+	#Temporary filler
+	
+	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
+	room_temps = get_data(temperature_nodes)
+	print room_temps
+	
+	x = list(range(11))
+	y0 = x
+	y1 = [10 - i for i in x]
+	y2 = [abs(i - 5) for i in x]
+
+	# create a new plot
+	s1 = figure(plot_width=250, plot_height=250, title=None)
+	s1.circle(x, y0, size=10, color="navy", alpha=0.5)
+	
+	return s1, True
 
 # Funtion that writes the plot and some additional html code into an html file so the plot can be added to the site
 # It expects a plot p, an html file name for the plot to be written to and an error message for when there is no (recent) data
@@ -140,6 +158,8 @@ rel="stylesheet" type="text/css">
 	div_file.write(script)
 	div_file.write(div)
 	div_file.close()
+	print script
+	print div
 		
 def write_plot_file_error(plot_file_name, no_data_error_message):
 	# When there is no (recent) data, a message is printed, and a message is displayed instead of the visualisation.
@@ -148,9 +168,45 @@ def write_plot_file_error(plot_file_name, no_data_error_message):
 	div_file.write("<div><p>" + no_data_error_message + "</p></div>")
 	div_file.close()
 
+# Funtion that executes the plot functions and then writes the plot and some additional html code into an html file so the plot can be added to the site
+def create_plots():
+	plot_file_name = "house_temperature_visualisation_div.html"
+	plot_name = "Plot 1"	#TODO: temporary
+	#no_data_error_message = "There is no data available, or the data available is more than 2 days old. Please check if all nodes are funtioning correctly. "
+	html_links = """<link
+href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
+rel="stylesheet" type="text/css">
+<link
+href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.css"
+rel="stylesheet" type="text/css">
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
+"""
+
+	plots = []	
+	plots.append(create_house_current_temp_plot())
+	plots.append(create_temperature_history_plot())
+	
+	div_file = open(plot_file_name, "w")
+	div_file.write(html_links)
+	
+	for plot in plots:
+		print plot[1]
+		if plot[1]:
+			script, div = components(plot[0])
+			div_file.write(script)
+			div_file.write(div)
+		else:
+			no_data_error_message = "For " + plot_name + ", there is no data available, or the data available is more than 2 days old. Please check if all nodes are funtioning correctly"
+			print no_data_error_message
+			div_file.write("<div><p>" + no_data_error_message + "</p></div>")
+
+	div_file.close()
+	
+create_plots()
+
 # Run the code every 30 minutes
 #schedule.every(30).minutes.do(create_plot)
-create_house_current_temp_plot()
 
 """while True:
     schedule.run_pending()
