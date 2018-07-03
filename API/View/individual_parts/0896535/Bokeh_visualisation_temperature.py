@@ -25,7 +25,7 @@ def process_date(date):
 	return processed
 
 # The function that creates the plot
-def create_plot():
+def create_house_current_temp_plot():
 	print "Create plot."
 	# Collect the data
 	current_date = datetime.date.today()
@@ -106,9 +106,16 @@ def create_plot():
 		hover.tooltips = [
 			("Temperature (°C)", "@temp"),
 		]
+		
+		# Send
+		file_name = "house_temperature_visualisation_div.html"
+		error_message = "There is no data available, or the data available is more than 2 days old. Please check if all nodes are funtioning correctly. "
+		write_plot_file(p, file_name, error_message, data_available)
 
-
-		# Write everything into an html file so the plot can be added to the site
+# Funtion that writes the plot and some additional html code into an html file so the plot can be added to the site
+# It expects a plot p, an html file name for the plot to be written to and an error message for when there is no (recent) data
+def write_plot_file(p, plot_file_name, no_data_error_message, data_available):	#TODO: Move data available if possible
+	if data_available:
 		html_links = """<link
 href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
 rel="stylesheet" type="text/css">
@@ -120,22 +127,23 @@ rel="stylesheet" type="text/css">
 """
 		
 		script, div = components(p)
-		div_file = open("house_temperature_visualisation_div.html", "w")
+		div_file = open(plot_file_name, "w")
 		div_file.write(html_links)
 		div_file.write(script)
 		div_file.write(div)
 		div_file.close()
 	else:
 		# When there is no (recent) data, a message is printed, and a message is displayed instead of the visualisation.
-		print "There is no data available. Please check if all nodes are funtioning correctly. "
-		div_file = open("house_temperature_visualisation_div.html", "w")
-		div_file.write("<div><p>There is no data available, or the data available is more than 2 days old. Please check if all nodes are funtioning correctly.</p></div>")
+		print no_data_error_message
+		div_file = open(plot_file_name, "w")
+		div_file.write("<div><p>" + no_data_error_message + "</p></div>")
 		div_file.close()
 
 # Run the code every 30 minutes
-schedule.every(30).minutes.do(create_plot)
+#schedule.every(30).minutes.do(create_plot)
+create_house_current_temp_plot()
 
-while True:
+"""while True:
     schedule.run_pending()
     time.sleep(1)
-
+"""
