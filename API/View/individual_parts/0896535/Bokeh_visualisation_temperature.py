@@ -13,7 +13,8 @@ from bokeh.models.widgets import Panel, Tabs
 from bokeh.embed import (components, autoload_static)
 
 # Function definitions
-# A function that processes a date object so it is styled the same way as the dates in the database 
+# Function that processes a date object so it is styled the same way as the dates in the database
+# It expects a date object
 def process_date(date):
 	processed = str(date.year) 
 	if date.month < 10:
@@ -24,31 +25,36 @@ def process_date(date):
 	processed = processed + str(date.day)
 	return processed
 
-# The function that creates the plot
-def create_house_current_temp_plot():
-	print "Create plot."
-	# Collect the data
+# Function that collects the data
+# It expects a list of the nodes you want to collect data from
+def get_data(nodes):
 	current_date = datetime.date.today()
 	processed_current_date = process_date(current_date)
 
-	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
-
-	room_temps = []
-	data_available = True
-	for node in temperature_nodes.keys():
+	data_points = []
+	for node in nodes.keys():
 		print processed_current_date
-		temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_current_date).read())
+		nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_current_date).read())
 		# Checks if data is returned. If not, it checks the previous day. If the previous day also does not have data available, there is no data available from recently enough
-		if len(temperature_nodes[node]) < 1:
+		if len(nodes[node]) < 1:
 			yesterday = current_date - datetime.timedelta(days=1)
 			processed_yesterday = process_date(yesterday)
-			temperature_nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_yesterday).read())
-			if len(temperature_nodes[node]) < 1:
-				data_available = False
+			nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + processed_yesterday).read())
+			if len(nodes[node]) < 1:
 				break	
-		room_temps.append(temperature_nodes[node][0]['temperature'])
+		data_points.append(nodes[node][0]['temperature'])
+	return data_points
+	
+# Function that creates the map plot with current temperatures in the CHIBB house
+def create_house_current_temp_plot():
+	print "Create plot."
+	
+	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
+	room_temps = get_data(temperature_nodes)
+	print room_temps
 
-	if data_available:
+	if len(room_temps) > 0:
+		#if data_available:
 		# Prepare the data
 		legend_xs = [[33,33,34,34] for x in range (23)]
 		legend_ys = [[12.5-0.5*x,13-0.5*x,13-0.5*x,12.5-0.5*x] for x in range (23)]
@@ -107,16 +113,18 @@ def create_house_current_temp_plot():
 			("Temperature (°C)", "@temp"),
 		]
 		
-		# Send
+		# Send everyting to the write plot file function
+		file_name = "house_temperature_visualisation_div.html"
+		write_plot_file(p, file_name)
+	else:
 		file_name = "house_temperature_visualisation_div.html"
 		error_message = "There is no data available, or the data available is more than 2 days old. Please check if all nodes are funtioning correctly. "
-		write_plot_file(p, file_name, error_message, data_available)
+		write_plot_file_error(file_name, error_message)
 
 # Funtion that writes the plot and some additional html code into an html file so the plot can be added to the site
 # It expects a plot p, an html file name for the plot to be written to and an error message for when there is no (recent) data
-def write_plot_file(p, plot_file_name, no_data_error_message, data_available):	#TODO: Move data available if possible
-	if data_available:
-		html_links = """<link
+def write_plot_file(p, plot_file_name):
+	html_links = """<link
 href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
 rel="stylesheet" type="text/css">
 <link
@@ -126,18 +134,19 @@ rel="stylesheet" type="text/css">
 <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.14.min.js"></script>
 """
 		
-		script, div = components(p)
-		div_file = open(plot_file_name, "w")
-		div_file.write(html_links)
-		div_file.write(script)
-		div_file.write(div)
-		div_file.close()
-	else:
-		# When there is no (recent) data, a message is printed, and a message is displayed instead of the visualisation.
-		print no_data_error_message
-		div_file = open(plot_file_name, "w")
-		div_file.write("<div><p>" + no_data_error_message + "</p></div>")
-		div_file.close()
+	script, div = components(p)
+	div_file = open(plot_file_name, "w")
+	div_file.write(html_links)
+	div_file.write(script)
+	div_file.write(div)
+	div_file.close()
+		
+def write_plot_file_error(plot_file_name, no_data_error_message):
+	# When there is no (recent) data, a message is printed, and a message is displayed instead of the visualisation.
+	print no_data_error_message
+	div_file = open(plot_file_name, "w")
+	div_file.write("<div><p>" + no_data_error_message + "</p></div>")
+	div_file.close()
 
 # Run the code every 30 minutes
 #schedule.every(30).minutes.do(create_plot)
