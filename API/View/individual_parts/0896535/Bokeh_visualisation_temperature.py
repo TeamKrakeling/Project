@@ -28,6 +28,8 @@ def process_date(date):
 # Function that collects the data
 # It expects a list of the nodes you want to collect data from
 def get_data(nodes):
+	#TODO: add options for all data or most recent
+
 	current_date = datetime.date.today()
 	processed_current_date = process_date(current_date)
 
@@ -74,11 +76,11 @@ def create_house_current_temp_plot():
 			temp=room_temps + legend_temps
 		))
 		
-		TOOLS = "reset,hover,save"
+		plot_tools = "reset,hover,save"
 
 		# Create the visualisation
 		p = figure(
-			title="Temperatures CHIBB house", tools=TOOLS,
+			title="Temperatures CHIBB house", tools=plot_tools,
 			x_axis_location=None, y_axis_location=None,
 			width=1000,height=500
 		)
@@ -128,16 +130,29 @@ def create_temperature_history_plot():
 	room_temps = get_data(temperature_nodes)
 	print room_temps
 	
-	x = list(range(11))
-	y0 = x
-	y1 = [10 - i for i in x]
-	y2 = [abs(i - 5) for i in x]
+	if len(room_temps) > 0:
+		x = list(range(len(room_temps)))
+		y0 = x
+		y1 = [10 - i for i in x]
+		y2 = [abs(i - 5) for i in x]
 
-	# create a new plot
-	s1 = figure(plot_width=250, plot_height=250, title=None)
-	s1.circle(x, y0, size=10, color="navy", alpha=0.5)
-	
-	return s1, True
+		plot_tools = "reset,hover,save"
+		
+		# create a new plot
+		p = figure(
+			title="Temperature history", tools=plot_tools,
+			plot_width=250, plot_height=250
+		)
+		
+		p.xaxis.axis_label = 'Date'
+		p.yaxis.axis_label = 'Temperature'
+		
+		p.line(x, room_temps, color='navy')
+		p.circle(x, room_temps, size=10, color="navy", alpha=0.5)
+		
+		return p, True
+	else:
+		return p, False
 
 # Funtion that writes the plot and some additional html code into an html file so the plot can be added to the site
 # It expects a plot p, an html file name for the plot to be written to and an error message for when there is no (recent) data

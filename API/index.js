@@ -76,22 +76,24 @@ app.post('/post', function(req, res){
 						
 						if((result[0]["token"] === req.body.token) && result[0]["active"] == "true"){
 							console.log("Tokens match");
+							if(err) throw err;
+							
+							//Insert the data
+							r.db(DBName).table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
+							{
 								if(err) throw err;
-								
-								//Insert the data
-								r.db(DBName).table(req.body.table).insert(req.body.content).run(conn, function(err, DBres)
-								{
-									if(err) throw err;
-									console.log("Posted data");
-								});
-								
-								//Update the last_updated field of the node in the tokens table, so we know it has been updated
-								var date = new Date();
-								var milliseconds_since_epoch = date.getTime();	
-								
-								r.db(DBName).table("tokens").filter({token:req.body.token}).update({last_updated: milliseconds_since_epoch}).run(conn, function(err, DBres){
-									if(err) throw err;
-								});
+								console.log("Posted data");
+							});
+							
+							//Update the last_updated field of the node in the tokens table, so we know it has been updated
+							var date = new Date();
+							var milliseconds_since_epoch = date.getTime();	
+							
+							r.db(DBName).table("tokens").filter({token:req.body.token}).update({last_updated: milliseconds_since_epoch}).run(conn, function(err, DBres){
+								if(err) throw err;
+							});
+							
+							//TODO: insert python script execution here?
 						} else if (result[0]["active"] == "false"){
 							console.log("ignored because the token isn't active");
 						}
