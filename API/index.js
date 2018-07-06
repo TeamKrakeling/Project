@@ -61,7 +61,8 @@ app.post('/post', function(req, res){
 		method: "GET"
 	}, function(error, response, body)
 	{
-		if(body.indexOf(req.body.table) > 0)
+		parsedBody = JSON.parse(body)
+		if(parsedBody.indexOf(req.body.table) > 0)
 		{
 			//Check if the token the user supplemented and the token in the database match
 			r.connect({ host: DBHost, port: DBPort }, function(err, conn){
@@ -188,6 +189,7 @@ app.get('/get_tablelist',function(req, res){
 				if (err) throw err;
 				
 				var resultJson = JSON.stringify(result, null, 2);
+
 				console.log("*Get tablelist*:");
 				res.end(resultJson);
 			});
@@ -212,17 +214,19 @@ app.get('/get_tokens',function(req, res){
 });
 
 //Get data from a table (based on what date you passed in YYYYMMDD format, '2016'' for all data in 2016, '201601' for January 2016, '20160101' for the first of January 2016)
-//Pass table and time_period variables with /get_data?table=*VARIABELE*&time_period=*VARIABELE*
+//It expects table and time_period variables like so: /get_data?table=*VARIABLE*&time_period=*VARIABLE*
 app.get('/get_data',function(req, res){
 	var table = req.query.table;
 	var time_period = req.query.time_period;
-	if(table && time_period){	
+	
+	if(table && time_period){
 		request({
 			uri: "http://145.24.222.23:8181/get_tablelist",
 			method: "GET"
 		}, function(error, response, body)
 		{
-			if(body.indexOf(req.query.table) > 0)
+			parsedBody = JSON.parse(body)
+			if(parsedBody.indexOf(table) > 0)
 			{
 				r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 					if(err) throw err;
