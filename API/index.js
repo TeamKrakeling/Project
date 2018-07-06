@@ -51,7 +51,7 @@ app.get('/0896535_plot_div',function(req,res)
 //Handles all regular post calls to our api
 //It expects a json with the following fields: 'table' (with the name of the table you want to insert data into), 'token' (with the token of that table) and 'content' (with the content you want to insert)
 app.post('/post', function(req, res){
-	console.log("*post*: ");
+	console.log("*post*");
     res.writeHead(200, {'Content-Type': 'text/html'});
 	res.end('acknowledgement');
     
@@ -73,7 +73,7 @@ app.post('/post', function(req, res){
 						if (err) throw err;
 						
 						var resultJson = JSON.stringify(result, null, 2);
-						console.log("*Get token*:");
+						console.log("*Get token*");
 						
 						if((result[0]["token"] === req.body.token) && result[0]["active"] == "true"){
 							console.log("Tokens match");
@@ -190,7 +190,7 @@ app.get('/get_tablelist',function(req, res){
 				
 				var resultJson = JSON.stringify(result, null, 2);
 
-				console.log("*Get tablelist*:");
+				console.log("*Get tablelist*");
 				res.end(resultJson);
 			});
 		});

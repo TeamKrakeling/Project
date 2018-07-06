@@ -4,33 +4,36 @@ import json
 import datetime
 import schedule
 import time
+from numpy import mean
 
 from bokeh.plotting import figure, output_file, show
 from bokeh.palettes import Plasma11 as palette
 from bokeh.plotting import figure
-from bokeh.models import (ColumnDataSource, HoverTool, LinearColorMapper, Label)
+from bokeh.models import (ColumnDataSource, HoverTool, LinearColorMapper, Label, DatetimeTickFormatter)
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.embed import (components, autoload_static)
 
 # Function definitions
 # Function that processes a date object so it is styled the same way as the dates in the database
 # It expects a date object
-def process_date(date):
-	processed = str(date.year) 
-	if date.month < 10:
+def process_date(date_to_process):
+	processed = str(date_to_process.year) 
+	if date_to_process.month < 10:
 		processed = processed + "0"
-	processed = processed + str(date.month) 
-	if date.day < 10:
+	processed = processed + str(date_to_process.month) 
+	if date_to_process.day < 10:
 		processed = processed + "0"
-	processed = processed + str(date.day)
+	processed = processed + str(date_to_process.day)
 	return processed
 
 # Function that collects the data
-# It expects a list of the nodes and dates you want to collect data from and boolean only_most_recent (indicating if you want all data, or only the most recent).
-# It expects the nodes as a dictionary of nodenames and lists, and the dates in the format of "yyyymmdd", "yyyymm" or "yyyy"
-# Example: nodes = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"]
-def get_data(nodes, dates, only_most_recent):
-	data_points = []
+# It expects a list of the nodes, dates you want to collect data from and what data you want from them, and a boolean only_most_recent (indicating if you want all data, or only the most recent).
+# It expects four the nodes as a dictionary of nodenames and lists, the dates in the format of "yyyymmdd", "yyyymm" or "yyyy", and the data_to_collect as a list of strings
+# Example: nodes = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"], fields = ["temperature", "time"] and only_most_recent = False
+def get_data(nodes, dates, fields, only_most_recent):
+	data_points = {}
+	for field in fields:
+		data_points[field] = []
 	
 	for node in nodes.keys():
 		for date in dates:
@@ -40,13 +43,16 @@ def get_data(nodes, dates, only_most_recent):
 			if len(nodes[node]) < 1:
 				print "Stopped at " + node
 				break
+			# Then returns the data that was asked for
 			if only_most_recent:
-				data_points.append(nodes[node][0]["temperature"])
+				for field in fields:
+					data_points[field].append(nodes[node][0][field])
 			else:
 				for data_point in nodes[node]:
-					data_points.append(data_point["temperature"])
+					for field in fields:
+						data_points[field].append(data_point[field])
 					
-	print data_points
+	#print data_points
 	return data_points
 	
 # Function that creates the map plot with current temperatures in the CHIBB house
@@ -57,9 +63,11 @@ def create_house_current_temp_plot():
 	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
 	current_date = datetime.date.today()
 	dates_to_get = []
-	dates_to_get.append(process_date(current_date))
+	dates_to_get.append(process_date(current_date))	#TODO: maybe make check for current date if the new day has just started
+	values_to_get = ["temperature"]
 	
-	room_temps = get_data(temperature_nodes, dates_to_get, True)
+	result_data = get_data(temperature_nodes, dates_to_get, values_to_get, True)
+	room_temps = result_data["temperature"]
 	print room_temps
 
 	if len(room_temps) > 0:
@@ -92,8 +100,8 @@ def create_house_current_temp_plot():
 		)
 		p.grid.grid_line_color = None
 
-		p.patches('x', 'y', source=source,
-			fill_color = {'field': 'temp', 'transform': color_mapper},
+		p.patches("x", "y", source=source,
+			fill_color = {"field": "temp", "transform": color_mapper},
 			fill_alpha = 0.8, line_color = "white",	line_width = 3
 		)
 		
@@ -119,44 +127,80 @@ def create_house_current_temp_plot():
 			("Temperature (°C)", "@temp")
 		]
 		
-		return p, True
+		return p
 	else:
-		return p, False
+		return False
 
+
+def process_date_reverse(date):
+	year = int(date[0] + date[1] + date[2] + date[3])
+	month = int(date[4] + date[5])
+	day = int(date[6] + date[7])
+	return datetime.datetime(year, month, day)
+	
+def get_average_temps(data):
+	sorted_data = sorted(data, key=lambda tuple: tuple[1])
+	date_memory = sorted_data[0][1]
+	date_average_collector = {}
+	date_average_collector[date_memory] = []
+	
+	for data_point in sorted_data:
+		if data_point[1] == date_memory:
+			date_average_collector[data_point[1]].append(int(data_point[0]))
+		else:
+			date_memory = data_point[1]
+			date_average_collector[date_memory] = [int(data_point[0])]
+			
+	date_averages = []
+	for average in date_average_collector.keys():
+		date_averages.append([average, mean(date_average_collector[average])])
+	
+	return sorted(date_averages, key=lambda tuple: tuple[0])
+	
 # Function that creates the temperature history plot of the CHIBB house
 def create_temperature_history_plot():
 	print "Create temperature history plot."
 	
 	# Collect data
 	temperature_nodes = {"temperature_node_1":[], "temperature_node_2":[], "temperature_node_3":[], "temperature_node_4":[], "temperature_node_5":[], "temperature_node_6":[]}
-	dates = ["20180706"]
-	history_temps = get_data(temperature_nodes, dates, False)
-	print history_temps
+	dates = ["201807"]	# TODO: Update this to live
+	values_to_get = ["temperature", "date"]
+	
+	result_data = get_data(temperature_nodes, dates, values_to_get, False)
+	history_temp_data = get_average_temps(zip(result_data["temperature"], result_data["date"]))
+	#print history_temp_data
+	
+	history_dates, history_temps = zip(*history_temp_data)
+	history_dates = map(process_date_reverse, history_dates)
+	#print history_dates
+	#print history_temps
+	#source = columndatasource
 	
 	if len(history_temps) > 0:
 		# If data is available, prepare the data for use in the plot
-		x = list(range(len(history_temps)))
-		y0 = x
-		y1 = [10 - i for i in x]
-		y2 = [abs(i - 5) for i in x]
-
+		
 		plot_tools = "reset,hover,save"
 		
 		# Create a new plot
 		p = figure(
 			title = "Temperature history", tools = plot_tools,
-			plot_width = 1000, plot_height = 250
+			plot_width = 1000, plot_height = 250, 
+			x_axis_type = "datetime", x_axis_label = "Date", y_axis_label = "Temperature"
 		)
 		
-		p.xaxis.axis_label = 'Date'
-		p.yaxis.axis_label = 'Temperature'
+		p.line(x = history_dates, y = history_temps, color = "navy")
+		p.circle(history_dates, history_temps, size = 10, color = "navy", alpha = 0.5)
 		
-		p.line(x, history_temps, color = 'navy')
-		p.circle(x, history_temps, size = 10, color = "navy", alpha = 0.5)
+		p.xaxis.formatter=DatetimeTickFormatter(
+			hours=["%d %B %Y"],
+			days=["%d %B %Y"],
+			months=["%d %B %Y"],
+			years=["%d %B %Y"],
+		)
 		
-		return p, True
+		return p
 	else:
-		return p, False
+		return False
 
 # Funtion that executes the plot functions and then writes the plot and some additional html code into an html file so the plot can be added to the site
 def create_plots():
@@ -174,22 +218,22 @@ rel="stylesheet" type="text/css">
 	# Execute the create plot functions for the plots that are going to be drawn
 	plots = {}
 	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot()
-	plots["CHIBB house temperature history plot"] = create_temperature_history_plot()	# TODO: Sort the plots?
+	plots["CHIBB house temperature history plot"] = create_temperature_history_plot()	# TODO: Sort the plots? using layout maybe https://bokeh.pydata.org/en/latest/docs/user_guide/layout.html
 	
 	# Write everyting to the file
 	div_file = open(plot_file_name, "w")
 	div_file.write(html_links)
 	
 	for plot in plots.keys():
-		print plot
-		if plots[plot][1]:
-			script, div = components(plots[plot][0])
-			div_file.write(script)
-			div_file.write(div)
-		else:
+		if plots[plot] == False:"
 			no_data_error_message = "For " + plot + ", there is no data available, or the data available is too old. Please check if all nodes are functioning correctly"
 			print no_data_error_message
 			div_file.write("<div><p>" + no_data_error_message + "</p></div>")
+		else:
+			script, div = components(plots[plot])
+			div_file.write(script)
+			div_file.write(div)
+			
 	div_file.close()
 	
 create_plots()
