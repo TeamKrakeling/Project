@@ -1,0 +1,92 @@
+.header{
+	background-color:#91f8b7;
+	height: 10%;
+	font-family: 'Calibri', 'Arial', sans-serif;
+	font-size: 1.2em;
+	padding: 1%;
+}
+
+.menu{
+	height:6%;
+	border-bottom:3px solid black;
+}
+
+.menu ul a li{
+	font-family: 'Calibri', 'Arial', sans-serif;
+	color: black;
+	font-size: 1.5em;
+	display: inline;
+	margin-right: 7%;
+}
+
+.content {
+	width: 98%;
+	margin-left:2%;
+}
+
+.current {
+	color: #57966e;
+}
+
+.redDot {
+	height: 10px;
+	width: 10px;
+	margin-right: 10%;
+	background-color:#f44242;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+.orangeDot {
+	height: 10px;
+	width: 10px;
+	margin-right: 10%;
+	background-color:#f49b42;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+.greenDot {
+	height: 10px;
+	width: 10px;
+	margin-right: 10%;
+	background-color:#71f441;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+p {
+	font-family: 'Calibri', 'Arial', sans-serif;
+	color:black;
+}
+
+th {
+	background-color:#91f8b7;
+	font-size: 1.2em;
+	min-width: 90px;
+}
+
+p {
+	font-family: 'Calibri', 'Arial', sans-serif;
+	color:black;
+}
+
+h2 {
+	font-family: 'Calibri', 'Arial', sans-serif;
+	color:black;
+}
+
+a {
+	text-decoration: none;
+}
+
+table, th, td {
+	font-family: 'Calibri', 'Arial', sans-serif;
+	border-collapse: collapse;
+	border: 1px solid black
+}
+
+td{
+	padding-left: 4px;
+	padding-right: 8px;
+}
