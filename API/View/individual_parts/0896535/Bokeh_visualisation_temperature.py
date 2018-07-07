@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+# Author: Rianne (Team Krakeling)
+# Summary: The python section of my part of the CHIBB house project. This code creates the plots shown on the visualisation page.
+
 # -- Imports --
 import urllib2
 import json

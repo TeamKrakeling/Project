@@ -163,7 +163,7 @@ app.post('/toggle_node', function (req, res) {
 	var active_boolean = "";
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.db(DBName).table("tokens").filter(function(doc){return doc('token').match(req.body.content.fieldToUpdate.token)}).run(conn, function(err, cursor){
+		r.db(DBName).table("tokens").filter(function(doc){return doc('nodename').match(req.body.content.fieldToUpdate.nodename)}).run(conn, function(err, cursor){
 			if (err) throw err;
 				cursor.toArray(function(err, result) {
 					if (err) throw err;

@@ -16,24 +16,24 @@
 		</div>
 		<div class="content">
 			<div>
-				<p>Here, you can manage the sensor nodes of the CHIBB house and their tokens.</p>
+				<p>Here, you can manage the sensor nodes of the CHIBB house.</p>
 			</div>
 			<div>
-				<h2>Request a token:</h2>
-				<p>Here you can request a token for a new sensor node. <br>
-				If you request a node, a database table is automatically created for the sensor node as well.</p>
+				<h2>Create a sensor node:</h2>
+				<p>Here you can create a new sensor node, and receive a token for your new sensor node. <br>
+				If you create a new sensor node, a database table is automatically created for the sensor node, and you can start sending data to it with the token you receive here.</p>
 				<input type="text" id="nodeNameInput" maxlength="200" placeholder="Node name" width="100">
-				<button id="requestButton">Get token</button>
+				<button id="requestButton">Create node and get token</button>
 				<div id="token_display"></div>
 				
-				<h2>Toggle a token:</h2>
-				<p>Sets a sensor node to active or inactive.</p>
-				<input type="text" id="nodeToToggleInput" maxlength="200" placeholder="Node token" width="100">
-				<button id="toggleButton">Toggle token on/off</button>
+				<h2>Turn a sensor node on or off:</h2>
+				<p>Sets a sensor node to active or inactive, depending on it's current status.</p>
+				<input type="text" id="nodeToToggleInput" maxlength="200" placeholder="Node name" width="100">
+				<button id="toggleButton">Toggle node on or off</button>
 				<div id="toggle_display"></div>
 				
 				<h2>Node overview table:</h2>
-				<p>This table gives a overview of all of the tokens an their status.</p>
+				<p>This table gives a overview of all of the tokens and their status.</p>
 				<table id="node_table"><table>
 			</div>
 		</div>
