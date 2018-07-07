@@ -55,9 +55,13 @@
 	display: inline-block;
 }
 
+.errorMessage{
+	color: red;
+}
+
 p {
 	font-family: 'Calibri', 'Arial', sans-serif;
-	color:black;
+	color: black;
 }
 
 th {
@@ -73,7 +77,7 @@ p {
 
 h2 {
 	font-family: 'Calibri', 'Arial', sans-serif;
-	color:black;
+	color: black;
 }
 
 a {

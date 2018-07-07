@@ -7,27 +7,35 @@ $(document).ready(function(){
 		nodeName = $("#nodeNameInput").val();
 		if(nodeName.length > 0){
 			token = generateToken();
-			$("#token_display").html("<p>Token: " + token + "</p>");
-			var data = {};
+			
+			var data_to_send = {};
 
 			var content	= {};					
 			content["nodename"] = nodeName;
-			content["date"] = getDate();
+			content["date"] = getDate("DMY");
 			content["token"] = token;	
 			content["active"] = true;
+			content["last_updated"] = getDate("Mill");
 			
-			data["content"] = content;
+			data_to_send["content"] = content;
 			
-			console.log(data);
+			console.log("data to send: ");
+			console.log(data_to_send);
 			
-			$.post('/post_token_creator', data, function(data){
+			$.post('/post_token_creator', data_to_send, function(data){
 				console.log(data);
-			}, 'json');
+				if(data == "acknowledgement"){
+					$("#token_display").html("<p>New node created.<br>Token: " + token + "</p>");
+				} 
+				else{
+					$( "#token_display" ).html("<p class='errorMessage'>" + data + "</p>" );
+				}
+			});
 			
 			$('#requestButton').prop('disabled', true);
 			setTimeout(function(){$('#requestButton').prop('disabled', false)}, 5000);
 		} else {
-			$("#token_display").html("<p>Please put in a node name.</p>");
+			$("#token_display").html("<p class='errorMessage'>Please put in a node name.</p>");
 		}
 	});
 
@@ -37,17 +45,17 @@ $(document).ready(function(){
 		console.log("Click update");
 		nodeName = $("#nodeToToggleInput").val();
 		if(nodeName.length > 0){
-			var data = {};
+			var data_to_send = {};
 			
 			var content = {};
 			var fieldToUpdate = {};
 			fieldToUpdate["nodename"] = nodeName;
 			content["fieldToUpdate"] = fieldToUpdate;
 			
-			data["content"] = content;
-			console.log(data);
+			data_to_send["content"] = content;
+			console.log(data_to_send);
 			
-			$.post('/toggle_node', data, function(data){
+			$.post('/toggle_node', data_to_send, function(data){
 				//console.log(data);
 			}, 'json');
 			
@@ -55,32 +63,42 @@ $(document).ready(function(){
 			setTimeout(function(){$('#toggleButton').prop('disabled', false)}, 5000);
 			location.reload();
 		} else {
-			$("#toggle_display").html("<p>Please put in a token to update.</p>");
+			$("#toggle_display").html("<p class='errorMessage'>Please put in a node name for the node to toggle.</p>");
 		}
 	});
 
 	//--general functions used in the click listeners
 	function generateToken(){
-		var date = new Date();
-		var milliseconds = date.getTime();
+		var milliseconds = getDate("Mill")
 		var token = milliseconds.toString(16);
 		console.log(token);
 		return token;
 	}
 
-	function getDate(){
+	function getDate(type){
 		var date = new Date();
-		var month = date.getUTCMonth() + 1;
-		var day = date.getUTCDate();
-		var year = date.getUTCFullYear();
-		DMY = day + "/" + month + "/" + year;
-		return DMY;
+		if(type == "DMY"){
+			var month = date.getUTCMonth() + 1;
+			var day = date.getUTCDate();
+			var year = date.getUTCFullYear();
+			DMY = day + "/" + month + "/" + year;
+			return DMY;
+		}
+		if(type == "Mill"){
+			var milliseconds_since_epoch = date.getTime();
+			return milliseconds_since_epoch;
+		}
+		else{
+			console.log("No known date type was given, returned full date");
+			return date;
+		}
 	}
 
 	//--Table creation
 	//This creates an overview table of all existing node tables with additional information.
 	$.get('http://145.24.222.23:8181/get_tokens', function (json)
 	{
+		var regular_interval = 1800000
 		var table = "<thead><tr><th>Node name:</th><th>Token:</th><th>On/off:</th><th>Current status:</th></tr></thead>";
 		table = table + "<tbody>";
 		
@@ -103,11 +121,11 @@ $(document).ready(function(){
 				table = table + "<td><span class='redDot'></span>Inactive: this node has been turned off.</td>";
 			}
 			//When the last updated time is more than 30 intervals (900 minutes) status is set to inactive.
-			else if((milliseconds_since_epoch - jsonobject.last_updated) > 54000000){ //54000000 = 900 minutes, which is 30 intervals.
+			else if((milliseconds_since_epoch - jsonobject.last_updated) > (regular_interval*30)){ //54000000 = 900 minutes, which is 30 intervals.
 				table = table + "<td><span class='redDot'></span>Inactive: this node has not received data for at least 30 regular intervals of 30 minutes.</td>";
 			}
 			//When the last updated time is more than 3 intervals (90 minutes) status turns to intermittent failures.
-			else if (milliseconds_since_epoch - jsonobject.last_updated > 5460000){ //5460000 = 91 minutes, every interval is 30 minutes.
+			else if (milliseconds_since_epoch - jsonobject.last_updated > (regular_interval*3)){ //5460000 = 91 minutes, every interval is 30 minutes.
 				table = table + "<td><span class='orangeDot'></span>Intermittent Failures: this node has not received data for 3 regular intervals of 30 minutes.</td>";
 			}
 			else{

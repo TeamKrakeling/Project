@@ -57,7 +57,7 @@ app.get('/0896535_script',function(req,res)
 app.post('/post', function(req, res){
 	console.log("*post*");
     res.writeHead(200, {'Content-Type': 'text/html'});
-	res.end('acknowledgement');
+	
     
 	//Check if a table is given and the table exists
 	request({
@@ -98,12 +98,15 @@ app.post('/post', function(req, res){
 								if(err) throw err;
 							});
 							
+							res.end('acknowledgement');
 							//TODO: insert python script execution here?
 						} else if (result[0]["active"] == "false"){
 							console.log("ignored because the token isn't active");
+							res.end("ignored because the token isn't active");
 						}
 						else {
 							console.log("Tokens don't match");
+							res.end("Tokens don't match");
 						}
 					});
 				});
@@ -120,36 +123,38 @@ app.post('/post', function(req, res){
 app.post('/post_token_creator', function(req, res){
 	console.log("*post token creator*: ");
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end('acknowledgement');
-	
-	console.log("Created token: ");
-	console.log(req.body.content);
-
+    
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-		r.db(DBName).table("tokens").insert(req.body.content).run(conn, function(err, DBres){
-			if(err) throw err;
-			console.log(req.body.content);
-			console.log(req.body.content.nodename);
-			
-			//Check if table exists, so it doesn't crash if the program tries to create a table that already exists
-			request({
-				uri: "http://145.24.222.23:8181/get_tablelist",
-				method: "GET"
-			}, function(error, response, body)
-			{
-				if(body.indexOf(req.body.content.nodename) <= 0){
-					r.db("ICTlab").tableCreate(req.body.content.nodename).run(conn, function(err, DBres)
-					{
-						if(err) throw err;
-						console.log("Created new node table: " + req.body.content.nodename);
-					});
-				}
-				else {
-					console.log("The table '" + req.body.content.nodename + "' already exists.");
-					res.end("The table '" + req.body.content.nodename + "' already exists.");
-				}
-			});
+
+		//Check if table exists, so it doesn't crash if the program tries to create a table that already exists
+		request({
+			uri: "http://145.24.222.23:8181/get_tablelist",
+			method: "GET"
+		}, function(error, response, body)
+		{
+			parsedBody = JSON.parse(body)
+			if(parsedBody.indexOf(req.body.content.nodename) <= 0){
+				console.log("Created token: ");
+				console.log(req.body.content);
+				
+				r.db("ICTlab").tableCreate(req.body.content.nodename).run(conn, function(err, DBres)
+				{
+					if(err) throw err;
+					console.log("Created new node table: " + req.body.content.nodename);
+				});
+				
+				r.db(DBName).table("tokens").insert(req.body.content).run(conn, function(err, DBres){
+					if(err) throw err;
+					console.log("Insterted token into table: " + req.body.content.nodename);
+				});
+				
+				res.end('acknowledgement');
+			}
+			else{
+				console.log("The sensor node table '" + req.body.content.nodename + "' already exists.");
+				res.end("The sensor node table '" + req.body.content.nodename + "' already exists.");
+			}
 		});
 	});
 });
@@ -164,19 +169,21 @@ app.post('/toggle_node', function (req, res) {
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
 		r.db(DBName).table("tokens").filter(function(doc){return doc('nodename').match(req.body.content.fieldToUpdate.nodename)}).run(conn, function(err, cursor){
-			if (err) throw err;
-				cursor.toArray(function(err, result) {
-					if (err) throw err;
-			
-					if (result[0].active == "true") {
-						active_boolean = "false";
-					} else {
-						active_boolean = "true";
-					}
-					r.db(DBName).table("tokens").filter(req.body.content.fieldToUpdate).update({active: active_boolean}).run(conn, function(err, DBres){
-						if(err) throw err;
-					});
+		if (err) throw err;
+			cursor.toArray(function(err, result) {
+				if (err) throw err;
+		
+				if (result[0].active == "true") {
+					active_boolean = "false";
+				} else {
+					active_boolean = "true";
+				}
+				r.db(DBName).table("tokens").filter(req.body.content.fieldToUpdate).update({active: active_boolean}).run(conn, function(err, DBres){
+					if(err) throw err;
 				});
+				
+				res.end('acknowledgement');
+			});
 		});
 	});
 });
@@ -248,6 +255,7 @@ app.get('/get_data',function(req, res){
 				console.log("table doesn't exist");
 			}
 		});
+		res.end('acknowledgement');
 	}
 	else
 	{
