@@ -47,8 +47,10 @@ app.get('/0896535_nodes',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896535/0896535_nodes.html');});
 app.get('/0896535_plot_div',function(req,res)
 {res.sendFile(__dirname+'/view/individual_parts/0896535/house_temperature_visualisation_div.html');});
-app.get('/0896535_css',function(req,res)
-{res.sendFile(__dirname+'/view/individual_parts/0896535/0896535.css');});
+app.get('/0896535_style',function(req,res)
+{res.sendFile(__dirname+'/view/individual_parts/0896535/0896535_style.css');});
+app.get('/0896535_script',function(req,res)
+{res.sendFile(__dirname+'/view/individual_parts/0896535/0896535_nodes_script.js');});
 
 //Handles all regular post calls to our api
 //It expects a json with the following fields: 'table' (with the name of the table you want to insert data into), 'token' (with the token of that table) and 'content' (with the content you want to insert)
