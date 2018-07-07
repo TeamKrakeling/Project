@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# -- Imports --
 import urllib2
 import json
 import datetime
@@ -13,7 +14,8 @@ from bokeh.models import (ColumnDataSource, HoverTool, LinearColorMapper, Label,
 from bokeh.models.widgets import Panel, Tabs
 from bokeh.embed import (components, autoload_static)
 
-# Function definitions
+# -- Function definitions --
+# - Utility functions -
 # Function that processes a date object so it is styled the same way as the dates in the database
 # It expects a date object
 def process_date(date_to_process):
@@ -25,10 +27,40 @@ def process_date(date_to_process):
 		processed = processed + "0"
 	processed = processed + str(date_to_process.day)
 	return processed
+	
+# Function that processes a date gotten from the database into a datetime object
+# It expects a string in the format "yyyymmdd"
+def process_date_reverse(date):
+	year = int(date[0] + date[1] + date[2] + date[3])
+	month = int(date[4] + date[5])
+	day = int(date[6] + date[7])
+	return datetime.datetime(year, month, day)
+	
+# Function that gets the average temperature per day of a series of days
+# It expects a list with tuples with a date (preferably in "yyyymmdd" format) and a temperature
+def get_average_temps(data):
+	sorted_data = sorted(data, key=lambda tuple: tuple[1])
+	
+	date_memory = sorted_data[0][1]
+	date_average_collector = {}
+	date_average_collector[date_memory] = []
+	
+	for data_point in sorted_data:
+		if data_point[1] == date_memory:
+			date_average_collector[data_point[1]].append(int(data_point[0]))
+		else:
+			date_memory = data_point[1]
+			date_average_collector[date_memory] = [int(data_point[0])]
+			
+	date_averages = []
+	for average in date_average_collector.keys():
+		date_averages.append([average, mean(date_average_collector[average])])
+	
+	return sorted(date_averages, key=lambda tuple: tuple[0])
 
 # Function that collects the data
 # It expects a list of the nodes, dates you want to collect data from and what data you want from them, and a boolean only_most_recent (indicating if you want all data, or only the most recent).
-# It expects four the nodes as a dictionary of nodenames and lists, the dates in the format of "yyyymmdd", "yyyymm" or "yyyy", and the data_to_collect as a list of strings
+# It expects four values:  the nodes as a dictionary of nodenames and lists, the dates in the format of "yyyymmdd", "yyyymm" or "yyyy", and the data_to_collect as a list of strings
 # Example: nodes = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"], fields = ["temperature", "time"] and only_most_recent = False
 def get_data(nodes, dates, fields, only_most_recent):
 	missed_data = False
@@ -58,18 +90,17 @@ def get_data(nodes, dates, fields, only_most_recent):
 	#print data_points
 	return data_points
 	
-# Function that creates the map plot with current temperatures in the CHIBB house
-def create_house_current_temp_plot(dates_to_get):
+# - Plot functions -
+# Function that creates a map plot with current temperatures in the CHIBB house
+# It expects 3 values: a string that will be the title of the plot, a dictionary of strings with lists containing the nodes to get data from and a list of dates to get data from
+# Example: plot_title = "Temperature map", nodes_to_get = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"]
+def create_house_current_temp_plot(plot_title, nodes_to_get, dates_to_get):
 	print "Create current temperatures map plot."
 	
 	#Collect data
-	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
-	current_date = datetime.date.today()
-	#dates_to_get = []
-	#dates_to_get.append(process_date(current_date))	#TODO: maybe make check for current date if the new day has just started
 	values_to_get = ["temperature"]
 	
-	result_data = get_data(temperature_nodes, dates_to_get, values_to_get, True)
+	result_data = get_data(nodes_to_get, dates_to_get, values_to_get, True)
 	
 	if len(result_data[values_to_get[0]]) > 0:
 		# If data is available, prepare the data for use in the plot
@@ -97,7 +128,7 @@ def create_house_current_temp_plot(dates_to_get):
 
 		# Create the visualisation
 		p = figure(
-			title = "Current temperatures CHIBB house", tools = plot_tools,
+			title = plot_title, tools = plot_tools,
 			x_axis_location = None, y_axis_location = None,
 			width = 1000, height = 500
 		)
@@ -134,47 +165,18 @@ def create_house_current_temp_plot(dates_to_get):
 	else:
 		return False
 
-# Function that processes a date gotten from the database into a datetime object
-# It expects a string in the format "yyyymmdd"
-def process_date_reverse(date):
-	year = int(date[0] + date[1] + date[2] + date[3])
-	month = int(date[4] + date[5])
-	day = int(date[6] + date[7])
-	return datetime.datetime(year, month, day)
-	
-# Function that gets the average temperature per day of a series of days
-# It expects a list with tuples with a date (preferably in "yyyymmdd" format) and a temperature
-def get_average_temps(data):
-	sorted_data = sorted(data, key=lambda tuple: tuple[1])
-	date_memory = sorted_data[0][1]
-	date_average_collector = {}
-	date_average_collector[date_memory] = []
-	
-	for data_point in sorted_data:
-		if data_point[1] == date_memory:
-			date_average_collector[data_point[1]].append(int(data_point[0]))
-		else:
-			date_memory = data_point[1]
-			date_average_collector[date_memory] = [int(data_point[0])]
-			
-	date_averages = []
-	for average in date_average_collector.keys():
-		date_averages.append([average, mean(date_average_collector[average])])
-	
-	return sorted(date_averages, key=lambda tuple: tuple[0])
-	
-# Function that creates the temperature history plot of the CHIBB house
-def create_temperature_history_plot(dates_to_get):
+# Function that creates a temperature history plot of the CHIBB house
+# It expects 3 values: a string that will be the title of the plot, a dictionary of strings with lists containing the nodes to get data from and a list of dates to get data from
+# Example: plot_title = "Temperature map", nodes_to_get = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"]
+def create_temperature_history_plot(plot_title, nodes_to_get, dates_to_get):
 	print "Create temperature history plot."
 	
 	# Collect data
-	temperature_nodes = {"temperature_node_1":[], "temperature_node_2":[], "temperature_node_3":[], "temperature_node_4":[], "temperature_node_5":[], "temperature_node_6":[]}
-	#dates = ["201803"]	# TODO: Update this to live
 	values_to_get = ["temperature", "date"]
 	
-	result_data = get_data(temperature_nodes, dates_to_get, values_to_get, False)
+	result_data = get_data(nodes_to_get, dates_to_get, values_to_get, False)
 	
-	if len(result_data) > 0:
+	if len(result_data[values_to_get[0]]) > 0:
 		# If data is available, prepare the data for use in the plot
 		history_temp_data = get_average_temps(zip(result_data["temperature"], result_data["date"]))
 		history_dates, history_temps = zip(*history_temp_data)
@@ -189,13 +191,13 @@ def create_temperature_history_plot(dates_to_get):
 		
 		# Create a new plot
 		p = figure(
-			title = "Temperature history", tools = plot_tools,
+			title = plot_title, tools = plot_tools,
 			plot_width = 1000, plot_height = 250, 
 			x_axis_type = "datetime", x_axis_label = "Date", y_axis_label = "Temperature"
 		)
 		
 		p.line("date", "temp", source = source, color = "navy")
-		p.circle("date", "temp", source = source, size = 10, color = "navy", alpha = 0.5)
+		p.circle("date", "temp", source = source, size = 5, color = "navy", alpha = 0.5)
 		
 		p.xaxis.formatter=DatetimeTickFormatter(
 			hours=["%d %B %Y"],
@@ -216,6 +218,7 @@ def create_temperature_history_plot(dates_to_get):
 	else:
 		return False
 
+# - Execution function -
 # Funtion that executes the plot functions and then writes the plot and some additional html code into an html file so the plot can be added to the site
 def create_plots():
 	plot_file_name = "house_temperature_visualisation_div.html"
@@ -231,11 +234,12 @@ rel="stylesheet" type="text/css">
 
 	# Execute the create plot functions for the plots that are going to be drawn
 	plots = {}
-	current_date = datetime.date.today()
-	dates_to_get = [process_date(current_date)]
+	current_date = [process_date(datetime.date.today())]
+	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
 	
-	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot(dates_to_get)
-	plots["CHIBB house temperature history plot"] = create_temperature_history_plot(["201807"])	# TODO: Sort the plots? using layout maybe https://bokeh.pydata.org/en/latest/docs/user_guide/layout.html
+	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot("Current temperatures", temperature_nodes, current_date)
+	plots["CHIBB house temperature history plot month"] = create_temperature_history_plot("Temperature history july 2018", temperature_nodes, ["201807"])	# TODO: Sort the plots? using layout maybe https://bokeh.pydata.org/en/latest/docs/user_guide/layout.html
+	plots["CHIBB house temperature history plot year"] = create_temperature_history_plot("Temperature history 2018", temperature_nodes, ["2018"])
 	
 	# Write everyting to the file
 	div_file = open(plot_file_name, "w")
@@ -254,11 +258,3 @@ rel="stylesheet" type="text/css">
 	div_file.close()
 	
 create_plots()
-
-# Run the code every 30 minutes
-#schedule.every(30).minutes.do(create_plot)
-
-"""while True:
-    schedule.run_pending()
-    time.sleep(1)
-"""
