@@ -9,6 +9,7 @@ import json
 import datetime
 import schedule
 import time
+import sys
 from numpy import mean
 
 from bokeh.plotting import figure, output_file, show
@@ -225,7 +226,7 @@ def create_temperature_history_plot(plot_title, nodes_to_get, dates_to_get):
 # - Execution function -
 # Funtion that executes the plot functions and then writes the plot and some additional html code into an html file so the plot can be added to the site
 def create_plots():
-	plot_file_name = "house_temperature_visualisation_div.html"
+	plot_file_name = "View/individual_parts/0896535/house_temperature_visualisation_div.html"
 	html_links = """<link
 href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
 rel="stylesheet" type="text/css">
@@ -262,3 +263,4 @@ rel="stylesheet" type="text/css">
 	div_file.close()
 	
 create_plots()
+#sys.exit()
