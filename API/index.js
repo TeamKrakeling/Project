@@ -273,7 +273,7 @@ app.post("/execute", function(req, res){
 		if (err){
 			throw err;
 		};
-		console.log("Finished python script");
+		console.log("Finished executing python script");
 		//res.write("Finished executing python script");
 		res.end("Finished python script");
 	});

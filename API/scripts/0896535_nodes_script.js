@@ -25,7 +25,7 @@ $(document).ready(function(){
 			$.post('/post_token_creator', data_to_send, function(data){
 				console.log(data);
 				if(data == "acknowledgement"){
-					$("#token_display").html("<p>New node created.<br>Token: " + token + "</p>");
+					$("#token_display").html("<p>New node created.<br>Token: " + token + "<br><br>Reload the page if you want to see it in the table below.</p>");
 				} 
 				else{
 					$( "#token_display" ).html("<p class='errorMessage'>" + data + "</p>" );
@@ -35,7 +35,7 @@ $(document).ready(function(){
 			$('#requestButton').prop('disabled', true);
 			setTimeout(function(){$('#requestButton').prop('disabled', false)}, 5000);
 		} else {
-			$("#token_display").html("<p class='errorMessage'>Please put in a node name.</p>");
+			$("#token_display").html("<p class='errorMessage'>Please put in a node name for the new node.</p>");
 		}
 	});
 
@@ -63,7 +63,7 @@ $(document).ready(function(){
 			setTimeout(function(){$('#toggleButton').prop('disabled', false)}, 5000);
 			location.reload();
 		} else {
-			$("#toggle_display").html("<p class='errorMessage'>Please put in a node name for the node to toggle.</p>");
+			$("#toggle_display").html("<p class='errorMessage'>Please put in the node name of the node you want to toggle on or off.</p>");
 		}
 	});
 

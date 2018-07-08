@@ -226,7 +226,7 @@ def create_temperature_history_plot(plot_title, nodes_to_get, dates_to_get):
 # - Execution function -
 # Funtion that executes the plot functions and then writes the plot and some additional html code into an html file so the plot can be added to the site
 def create_plots():
-	plot_file_name = "scripts/house_temperature_visualisation_div.html"
+	plot_file_name = "views/individual_parts/0896535/house_temperature_visualisation_div.html"
 	html_links = """<link
 href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
 rel="stylesheet" type="text/css">
@@ -242,7 +242,7 @@ rel="stylesheet" type="text/css">
 	current_date = [process_date(datetime.date.today())]
 	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
 	
-	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot("Current temperatures BLARHG", temperature_nodes, current_date)
+	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot("Current temperatures", temperature_nodes, current_date)
 	plots["CHIBB house temperature history plot month"] = create_temperature_history_plot("Temperature history july 2018", temperature_nodes, ["201807"])	# TODO: Sort the plots? using layout maybe https://bokeh.pydata.org/en/latest/docs/user_guide/layout.html
 	plots["CHIBB house temperature history plot year"] = create_temperature_history_plot("Temperature history 2018", temperature_nodes, ["2018"])
 	
@@ -263,4 +263,3 @@ rel="stylesheet" type="text/css">
 	div_file.close()
 	
 create_plots()
-#sys.exit()
