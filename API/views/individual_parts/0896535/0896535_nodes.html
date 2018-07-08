@@ -1,0 +1,41 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="/0896535_style">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="/0896535_script"></script>
+		
+	</head>
+	<body>
+		<div class="header"><h1>CHIBB data visualisation Rianne Schattenberg (0896535)</h1></div>
+		<div class="menu">
+			<ul>
+				<a href="http://145.24.222.23:8181/"><li>Project index</li></a>
+				<a href="http://145.24.222.23:8181/0896535"><li>Visualisation</li></a>
+				<a href="http://145.24.222.23:8181/0896535_nodes"><li class='current'>Node manager</li></a>
+			</ul>
+		</div>
+		<div class="content">
+			<div>
+				<p>Here, you can manage the sensor nodes of the CHIBB house.</p>
+			</div>
+			<div>
+				<h2>Create a sensor node:</h2>
+				<p>Here you can create a new sensor node, and receive a token for your new sensor node. <br>
+				If you create a new sensor node, a database table is automatically created for the sensor node, and you can start sending data to it with the token you receive here.</p>
+				<input type="text" id="nodeNameInput" maxlength="200" placeholder="Node name" width="100">
+				<button id="requestButton">Create node and get token</button>
+				<div id="token_display"></div>
+				
+				<h2>Turn a sensor node on or off:</h2>
+				<p>Sets a sensor node to active or inactive, depending on it's current status.</p>
+				<input type="text" id="nodeToToggleInput" maxlength="200" placeholder="Node name" width="100">
+				<button id="toggleButton">Toggle node on or off</button>
+				<div id="toggle_display"></div>
+				
+				<h2>Node overview table:</h2>
+				<p>This table gives a overview of all of the sensor nodes, their and their status.</p>
+				<table id="node_table"><table>
+			</div>
+		</div>
+	</body>
+</html>
