@@ -255,7 +255,7 @@ rel="stylesheet" type="text/css">
 	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot("Current temperatures", temperature_nodes, current_date)
 	plots["CHIBB house temperature history plot month"] = create_data_history_plot("Temperature history " + current_month_text + " " + current_year[0], "Temperature (°C)", temperature_nodes, current_month, "temperature")
 	plots["CHIBB house temperature history plot year"] = create_data_history_plot("Temperature history " + current_year[0], "Temperature (°C)", temperature_nodes, current_year, "temperature")
-	#plots["CHIBB house humidity"] = create_data_history_plot("Humidity history 2018", "Humidity (in % of max humidity)", humididy_nodes, current_year, "humidity")
+	#plots["CHIBB house humidity"] = create_data_history_plot("Humidity history " + current_year[0], "Humidity (in % of max humidity)", humididy_nodes, current_year, "humidity")
 	
 	# Write everyting to the file
 	div_file = open(plot_file_name, "w")
