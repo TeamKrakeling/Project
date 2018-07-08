@@ -106,9 +106,9 @@ $(document).ready(function(){
 		{
 			table = table + "<tr><td>" + jsonobject.nodename + "</td><td>" + jsonobject.token + "</td>";
 			if(jsonobject.active == "true"){
-				table = table + "<td><span class='greenDot'></span>" + jsonobject.active + "</td>";
+				table = table + "<td><span class='greenDot'></span>On</td>";
 			} else {
-				table = table + "<td><span class='redDot'></span>" + jsonobject.active + "</td>";
+				table = table + "<td><span class='redDot'></span>Off</td>";
 			}
 			
 			var date = new Date();
@@ -136,5 +136,7 @@ $(document).ready(function(){
 		
 		table = table + "</tbody>";
 		$( "#node_table" ).append(table);
+	}).fail(function() {
+		$( "#node_table" ).append("No data was received from the database.");
 	});
 });

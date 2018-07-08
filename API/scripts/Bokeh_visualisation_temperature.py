@@ -42,8 +42,8 @@ def process_date_reverse(date):
 	return datetime.datetime(year, month, day)
 	
 # Function that gets the average temperature per day of a series of days
-# It expects a list with tuples with a date (preferably in "yyyymmdd" format) and a temperature
-def get_average_temps(data):
+# It expects a list with tuples with a date (preferably in "yyyymmdd" format) and a data point (like temperature or humidity)
+def get_averages(data):
 	sorted_data = sorted(data, key=lambda tuple: tuple[1])
 	
 	date_memory = sorted_data[0][1]
@@ -97,16 +97,16 @@ def get_data(nodes, dates, fields, only_most_recent):
 	
 # - Plot functions -
 # Function that creates a map plot with current temperatures in the CHIBB house
-# It expects 3 values: a string that will be the title of the plot, a dictionary of strings with lists containing the nodes to get data from and a list of dates to get data from
+# It expects 3 values: a string that will be the title of the plot, a dictionary of strings with lists containing the nodes to get data from and a list of dates to get data from. 
 # Example: plot_title = "Temperature map", nodes_to_get = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"]
+# Note: This function is only meant for nodes containing temperature measurements.
 def create_house_current_temp_plot(plot_title, nodes_to_get, dates_to_get):
-	print "Create current temperatures map plot."
-	
 	#Collect data
 	values_to_get = ["temperature"]
 	
 	result_data = get_data(nodes_to_get, dates_to_get, values_to_get, True)
 	
+	print "Create current temperatures map plot."	
 	if len(result_data[values_to_get[0]]) > 0:
 		# If data is available, prepare the data for use in the plot
 		room_temps = result_data["temperature"]
@@ -171,25 +171,29 @@ def create_house_current_temp_plot(plot_title, nodes_to_get, dates_to_get):
 		return False
 
 # Function that creates a temperature history plot of the CHIBB house
-# It expects 3 values: a string that will be the title of the plot, a dictionary of strings with lists containing the nodes to get data from and a list of dates to get data from
-# Example: plot_title = "Temperature map", nodes_to_get = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"]
-def create_temperature_history_plot(plot_title, nodes_to_get, dates_to_get):
-	print "Create temperature history plot."
-	
+# It expects 3 values: a string that will be the title of the plot, a dictionary of strings with lists containing the nodes to get data from, a list of dates to get data from and a string that is the database field your chosen data is stored in
+# Example: plot_title = "Temperature history 2018", nodes_to_get = {"temperature_node_1":[],"temperature_node_2":[]} and dates = ["20180524", "201806", "2016"] and first_value_to_get = "temperature"
+def create_data_history_plot(plot_title, plot_y_axis_label, nodes_to_get, dates_to_get, first_value_to_get):
 	# Collect data
-	values_to_get = ["temperature", "date"]
+	values_to_get = [first_value_to_get]
+	values_to_get.append("date")
+	print "Create " + values_to_get[0] + " history plot."
 	
 	result_data = get_data(nodes_to_get, dates_to_get, values_to_get, False)
 	
+	print "Create " + values_to_get[0] + " history plot."
+	
 	if len(result_data[values_to_get[0]]) > 0:
 		# If data is available, prepare the data for use in the plot
-		history_temp_data = get_average_temps(zip(result_data["temperature"], result_data["date"]))
-		history_dates, history_temps = zip(*history_temp_data)
+		history_data_tuples = get_averages(zip(result_data[values_to_get[0]], result_data["date"]))
+		history_dates, history_data_points = zip(*history_data_tuples)
 		history_dates = map(process_date_reverse, history_dates)
+		
+		print history_data_points
 		
 		source = ColumnDataSource(data=dict(
 			date = history_dates,
-			temp = history_temps
+			data_point = history_data_points
 		))
 		
 		plot_tools = "reset,hover,save"
@@ -198,11 +202,11 @@ def create_temperature_history_plot(plot_title, nodes_to_get, dates_to_get):
 		p = figure(
 			title = plot_title, tools = plot_tools,
 			plot_width = 1000, plot_height = 250, 
-			x_axis_type = "datetime", x_axis_label = "Date", y_axis_label = "Temperature"
+			x_axis_type = "datetime", x_axis_label = "Date", y_axis_label = plot_y_axis_label
 		)
 		
-		p.line("date", "temp", source = source, color = "navy")
-		p.circle("date", "temp", source = source, size = 5, color = "navy", alpha = 0.5)
+		p.line("date", "data_point", source = source, color = "navy")
+		p.circle("date", "data_point", source = source, size = 5, color = "navy", alpha = 0.5)
 		
 		p.xaxis.formatter=DatetimeTickFormatter(
 			hours=["%d %B %Y"],
@@ -215,7 +219,7 @@ def create_temperature_history_plot(plot_title, nodes_to_get, dates_to_get):
 		hover = p.select_one(HoverTool)
 		hover.tooltips = [
 			("Date", "@date{%d %B %Y}"),
-			("Temperature (°C)", "@temp")
+			(plot_y_axis_label, "@data_point")
 		]
 		hover.formatters = { "date": "datetime"}
 		
@@ -226,7 +230,7 @@ def create_temperature_history_plot(plot_title, nodes_to_get, dates_to_get):
 # - Execution function -
 # Funtion that executes the plot functions and then writes the plot and some additional html code into an html file so the plot can be added to the site
 def create_plots():
-	plot_file_name = "views/individual_parts/0896535/house_temperature_visualisation_div.html"
+	plot_file_name = "views/individual_parts/0896535/house_visualisation_div.html"
 	html_links = """<link
 href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.14.min.css"
 rel="stylesheet" type="text/css">
@@ -241,16 +245,18 @@ rel="stylesheet" type="text/css">
 	plots = {}
 	current_date = [process_date(datetime.date.today())]
 	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
+	humididy_nodes = {"humidity_node_1":[],"humidity_node_2":[],"humidity_node_3":[],"humidity_node_4":[]}
 	
 	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot("Current temperatures", temperature_nodes, current_date)
-	plots["CHIBB house temperature history plot month"] = create_temperature_history_plot("Temperature history july 2018", temperature_nodes, ["201807"])	# TODO: Sort the plots? using layout maybe https://bokeh.pydata.org/en/latest/docs/user_guide/layout.html
-	plots["CHIBB house temperature history plot year"] = create_temperature_history_plot("Temperature history 2018", temperature_nodes, ["2018"])
+	plots["CHIBB house temperature history plot month"] = create_data_history_plot("Temperature history july 2018", "Temperature (°C)", temperature_nodes, ["201807"], "temperature")	# TODO: Sort the plots? using layout maybe https://bokeh.pydata.org/en/latest/docs/user_guide/layout.html
+	plots["CHIBB house temperature history plot year"] = create_data_history_plot("Temperature history 2018", "Temperature (°C)", temperature_nodes, ["2018"], "temperature")
+	plots["CHIBB house humidity"] = create_data_history_plot("Humidity history 2018", "Humidity (in % of max humidity)", humididy_nodes, ["2018"], "humidity")
 	
 	# Write everyting to the file
 	div_file = open(plot_file_name, "w")
 	div_file.write(html_links)
 	
-	for plot in plots.keys():
+	for plot in sorted(plots.keys()):
 		if plots[plot] == False:
 			no_data_error_message = "For " + plot + ", there is no data available, or the data available is too old. Please check if all nodes are functioning correctly"
 			print no_data_error_message

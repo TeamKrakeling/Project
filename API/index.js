@@ -48,7 +48,7 @@ app.get("/0896535",function(req,res)
 app.get("/0896535_nodes",function(req,res)
 {res.sendFile(__dirname+"/views/individual_parts/0896535/0896535_nodes.html");});
 app.get("/0896535_plot_div",function(req,res)
-{res.render(__dirname+"/views/individual_parts/0896535/house_temperature_visualisation_div.html");});
+{res.render(__dirname+"/views/individual_parts/0896535/house_visualisation_div.html");});
 app.get("/0896535_style",function(req,res)
 {res.sendFile(__dirname+"/views/individual_parts/0896535/0896535_style.css");});
 app.get("/0896535_script",function(req,res)
