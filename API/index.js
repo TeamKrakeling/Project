@@ -20,7 +20,6 @@ var DBName		= "ICTlab"
 app.use(bodyParser.json()); 							//support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 
-//use ejs for dynamic html page
 app.set("views", __dirname+"/views");
 app.engine("html", ejs.renderFile);
 app.set("view engine", "ejs");
@@ -125,8 +124,7 @@ app.post("/post_token_creator", function(req, res){
     
 	r.connect({ host: DBHost, port: DBPort }, function(err, conn){
 		if(err) throw err;
-
-		//Check if table exists, so it doesn't crash if the program tries to create a table that already exists
+		
 		request({
 			uri: "http://145.24.222.23:8181/get_tablelist",
 			method: "GET"
@@ -137,12 +135,14 @@ app.post("/post_token_creator", function(req, res){
 				console.log("Created token: ");
 				console.log(req.body.content);
 				
+				//Create new sensor node table
 				r.db("ICTlab").tableCreate(req.body.content.nodename).run(conn, function(err, DBres)
 				{
 					if(err) throw err;
 					console.log("Created new node table: " + req.body.content.nodename);
 				});
 				
+				//Insert new token into tokens table
 				r.db(DBName).table("tokens").insert(req.body.content).run(conn, function(err, DBres){
 					if(err) throw err;
 					console.log("Insterted token into table: " + req.body.content.nodename);
@@ -262,35 +262,32 @@ app.get("/get_data",function(req, res){
 });
 
 //Execute the python script
-app.post("/execute", function(req, res){
+app.post("/execute_python", function(req, res){
 	res.writeHead(200, {"Content-Type": "text/html"});
 
-	//res.write("running");
 	console.log("Executing python script")
 	var pyshell = new PythonShell("scripts/Bokeh_visualisation_temperature.py")
-	//pyshell.on('message', function (message) {console.log(message);});
 	pyshell.end(function (err) {
 		if (err){
 			throw err;
 		};
 		console.log("Finished executing python script");
-		//res.write("Finished executing python script");
 		res.end("Finished python script");
 	});
 });
 
-//Executes the python script in intervals of 30 minutes (= 1800000 milliseconds)
+//Executes the python script in intervals of 10 minutes (= 600000 milliseconds)
 setInterval(function(){
 	console.log("*Time to execute python script*");
 	request({
-		uri: "http://145.24.222.23:8181/execute",
+		uri: "http://145.24.222.23:8181/execute_python",
 		method: "POST"
 	}, function(error, response, body)
 	{
 		if (error) console.log(error)
 		console.log(body)
 	});
-}, 180000);
+}, 600000);
 
 //Specify port
 app.listen(8181);

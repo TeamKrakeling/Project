@@ -77,6 +77,7 @@ def get_data(nodes, dates, fields, only_most_recent):
 		if missed_data == False:
 			for date in dates:
 				print date
+				
 				nodes[node] = json.loads(urllib2.urlopen("http://145.24.222.23:8181/get_data?table=" + node + "&time_period=" + date).read())
 				# Checks if data is returned. If there is no data available, this means there is no data available or no data available from recently enough.
 				if len(nodes[node]) < 1:
@@ -243,14 +244,18 @@ rel="stylesheet" type="text/css">
 
 	# Execute the create plot functions for the plots that are going to be drawn
 	plots = {}
-	current_date = [process_date(datetime.date.today())]
+	new_date = process_date(datetime.date.today())
+	current_date = [new_date]
+	current_month = [new_date[:-2]]
+	current_month_text = str(datetime.date.today().strftime("%B"))
+	current_year = [new_date[:-4]]
 	temperature_nodes = {"temperature_node_1":[],"temperature_node_2":[],"temperature_node_3":[],"temperature_node_4":[],"temperature_node_5":[],"temperature_node_6":[]}
 	humididy_nodes = {"humidity_node_1":[],"humidity_node_2":[],"humidity_node_3":[],"humidity_node_4":[]}
 	
 	plots["CHIBB house current temperatures plot"] = create_house_current_temp_plot("Current temperatures", temperature_nodes, current_date)
-	plots["CHIBB house temperature history plot month"] = create_data_history_plot("Temperature history july 2018", "Temperature (°C)", temperature_nodes, ["201807"], "temperature")	# TODO: Sort the plots? using layout maybe https://bokeh.pydata.org/en/latest/docs/user_guide/layout.html
-	plots["CHIBB house temperature history plot year"] = create_data_history_plot("Temperature history 2018", "Temperature (°C)", temperature_nodes, ["2018"], "temperature")
-	plots["CHIBB house humidity"] = create_data_history_plot("Humidity history 2018", "Humidity (in % of max humidity)", humididy_nodes, ["2018"], "humidity")
+	plots["CHIBB house temperature history plot month"] = create_data_history_plot("Temperature history " + current_month_text + " " + current_year[0], "Temperature (°C)", temperature_nodes, current_month, "temperature")
+	plots["CHIBB house temperature history plot year"] = create_data_history_plot("Temperature history " + current_year[0], "Temperature (°C)", temperature_nodes, current_year, "temperature")
+	#plots["CHIBB house humidity"] = create_data_history_plot("Humidity history 2018", "Humidity (in % of max humidity)", humididy_nodes, current_year, "humidity")
 	
 	# Write everyting to the file
 	div_file = open(plot_file_name, "w")
