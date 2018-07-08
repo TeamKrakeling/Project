@@ -10,6 +10,7 @@ var app     	= express();
 var r 			= require("rethinkdb");
 var request 	= require("request");
 var bodyParser 	= require("body-parser");
+var ejs 		= require("ejs");
 var PythonShell = require("python-shell");
 
 var DBHost		= "localhost";
@@ -20,38 +21,38 @@ app.use(bodyParser.json()); 							//support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); 	//support encoded bodies
 
 //use ejs for dynamic html page
-app.set("views", __dirname+"/View");
-app.engine("html", require("ejs").renderFile);
+app.set("views", __dirname+"/views");
+app.engine("html", ejs.renderFile);
 app.set("view engine", "ejs");
 
 //Links various urls to their respective html pages
 app.get("/",function(req,res){
-  res.sendFile(__dirname+"/View/index.html");
+  res.sendFile(__dirname+"/views/index.html");
 });
 
 app.get("/token",function(req,res){
-  res.sendFile(__dirname+"/view/tokenpage.html");
+  res.sendFile(__dirname+"/views/tokenpage.html");
 });
 
 //Routes to indidual part of 0896024 Corné Verhoog (0896024)
 app.get("/0896024",function(req,res)
-{res.sendFile(__dirname+"/view/individual_parts/0896024/0896024.html");});
+{res.sendFile(__dirname+"/views/individual_parts/0896024/0896024.html");});
 app.get("/visualisation_0896024",function(req,res)
-{res.sendFile(__dirname+"/view/individual_parts/0896024/visualisation_0896024.html");});
+{res.sendFile(__dirname+"/views/individual_parts/0896024/visualisation_0896024.html");});
 app.get("/node_manager_0896024",function(req,res)
 {res.sendFile("individual_parts/0896024/node_manager_0896024.html");});
 
 //Routes to indidual part of Rianne Schattenberg (0896535)
 app.get("/0896535",function(req,res)
-{res.sendFile(__dirname+"/view/individual_parts/0896535/0896535.html");});
+{res.render(__dirname+"/views/individual_parts/0896535/0896535.html");});
 app.get("/0896535_nodes",function(req,res)
-{res.sendFile(__dirname+"/view/individual_parts/0896535/0896535_nodes.html");});
+{res.sendFile(__dirname+"/views/individual_parts/0896535/0896535_nodes.html");});
 app.get("/0896535_plot_div",function(req,res)
-{res.sendFile(__dirname+"/view/individual_parts/0896535/house_temperature_visualisation_div.html");});
+{res.render(__dirname+"/views/individual_parts/0896535/house_temperature_visualisation_div.html");});
 app.get("/0896535_style",function(req,res)
-{res.sendFile(__dirname+"/view/individual_parts/0896535/0896535_style.css");});
+{res.sendFile(__dirname+"/views/individual_parts/0896535/0896535_style.css");});
 app.get("/0896535_script",function(req,res)
-{res.sendFile(__dirname+"/view/individual_parts/0896535/0896535_nodes_script.js");});
+{res.sendFile(__dirname+"/scripts/0896535_nodes_script.js");});
 
 //Handles all regular post calls to our api
 //It expects a json with the following fields: "table" (with the name of the table you want to insert data into), "token" (with the token of that table) and "content" (with the content you want to insert)
@@ -260,20 +261,19 @@ app.get("/get_data",function(req, res){
 	}
 });
 
-//Execute the python scripts
-//Expects nothing
-app.post('/execute', function(req, res){
+//Execute the python script
+app.post("/execute", function(req, res){
 	res.writeHead(200, {"Content-Type": "text/html"});
 
 	//res.write("running");
 	console.log("Executing python script")
-	var pyshell = new PythonShell("View/individual_parts/0896535/Bokeh_visualisation_temperature.py")
+	var pyshell = new PythonShell("scripts/Bokeh_visualisation_temperature.py")
 	//pyshell.on('message', function (message) {console.log(message);});
 	pyshell.end(function (err) {
 		if (err){
 			throw err;
 		};
-		console.log("finished");
+		console.log("Finished python script");
 		//res.write("Finished executing python script");
 		res.end("Finished python script");
 	});
@@ -281,7 +281,7 @@ app.post('/execute', function(req, res){
 
 //Executes the python script in intervals of 30 minutes (= 1800000 milliseconds)
 setInterval(function(){
-	console.log("*Time to python*");
+	console.log("*Time to execute python script*");
 	request({
 		uri: "http://145.24.222.23:8181/execute",
 		method: "POST"
@@ -292,5 +292,6 @@ setInterval(function(){
 	});
 }, 180000);
 
+//Specify port
 app.listen(8181);
 console.log("Running at Port 8181");
